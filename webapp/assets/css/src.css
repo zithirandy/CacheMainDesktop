@@ -1,0 +1,158 @@
+@import 'tailwindcss' source(none);
+@import 'tailwindcss/theme' theme(inline reference);
+@source '../../templates/';
+@variant dark (&:where(.dark, .dark *));
+
+@layer base {
+    *,
+    ::after,
+    ::before,
+    ::backdrop,
+    ::file-selector-button {
+        border-color: var(--color-gray-200, currentColor);
+    }
+}
+
+@theme {
+    --color-primary-50: #f8fafc;
+    --color-primary-100: #f1f5f9;
+    --color-primary-200: #e2e8f0;
+    --color-primary-300: #cbd5e1;
+    --color-primary-400: #94a3b8;
+    --color-primary-500: #64748b;
+    --color-primary-600: #475569;
+    --color-primary-700: #334155;
+    --color-primary-800: #1e293b;
+    --color-primary-900: #0f172a;
+    --color-primary-950: #020617;
+    --link-bg: #64748b;
+    --link-bg-hover: #334155;
+    --link-active: #cbd5e1;
+    --link-active-dark: #0f172a;
+}
+
+.card {
+    @apply bg-white rounded-md border border-gray-200 dark:bg-gray-800 dark:border-gray-700;
+}
+
+.dashboard-link {
+    background-color: var(--link-bg);
+}
+
+.dashboard-link:hover {
+    background-color: var(--link-bg-hover);
+}
+
+.dashboard-link.active {
+    box-shadow: 0 0 0 4px var(--link-active);
+}
+
+.dark .dashboard-link.active {
+    box-shadow: 0 0 0 4px var(--link-active-dark);
+}
+
+.select {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath fill='none' stroke='%23475569' stroke-width='3' stroke-linecap='round' stroke-linejoin='round' d='m2 5 6 6 6-6'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 0.75rem center;
+    background-size: 16px 12px;
+}
+
+.checkbox:checked {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3E%3Cpath fill='none' stroke='white' stroke-width='3' stroke-linecap='round' stroke-linejoin='round' d='M5.5,10l3,3l6-6'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: cover;
+}
+
+#phpinfo .center {
+    text-align: center;
+}
+
+#phpinfo .center table {
+    margin: 1em auto;
+    text-align: left;
+}
+
+#phpinfo > .center table {
+    margin-top: 0;
+}
+
+#phpinfo table {
+    width: 100%;
+    table-layout: auto;
+}
+
+#phpinfo td,
+#phpinfo th {
+    border: 1px solid #fff;
+    font-size: 75%;
+    vertical-align: baseline;
+    padding: 4px 5px;
+}
+
+#phpinfo th {
+    position: sticky;
+    top: 0;
+    background: inherit;
+}
+
+#phpinfo h1 {
+    font-size: 150%;
+}
+
+#phpinfo h2 {
+    font-size: 125%;
+}
+
+#phpinfo .p {
+    text-align: left;
+}
+
+#phpinfo .e {
+    background-color: #ccf;
+    width: 300px;
+    font-weight: bold;
+}
+
+#phpinfo .h {
+    background-color: #99c;
+    font-weight: bold;
+}
+
+#phpinfo .v {
+    background-color: #ddd;
+    max-width: 300px;
+    overflow-x: auto;
+    word-wrap: break-word;
+}
+
+#phpinfo .v i {
+    color: #454545;
+}
+
+#phpinfo img {
+    float: right;
+    border: 0;
+}
+
+.dark #phpinfo td,
+.dark #phpinfo th {
+    border: 1px solid #111827;
+}
+
+.dark #phpinfo .e {
+    background-color: #99c;
+}
+
+.dark #phpinfo .h {
+    background-color: #669;
+}
+
+.dark #phpinfo .v {
+    background-color: #717171;
+}
+
+.dark #phpinfo .v i {
+    color: #c2c2c2;
+}

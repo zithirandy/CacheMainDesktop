@@ -1,0 +1,232 @@
+<?php
+/**
+ * This file is part of the phpCacheAdmin.
+ * Copyright (c) Róbert Kelčák (https://kelcak.com/)
+ */
+
+declare(strict_types=1);
+
+namespace RobiNN\Pca\Dashboards\Redis;
+
+use Exception;
+use Predis\Client as Predis;
+use RobiNN\Pca\Config;
+use RobiNN\Pca\Csrf;
+use RobiNN\Pca\Dashboards\DashboardException;
+use RobiNN\Pca\Dashboards\DashboardInterface;
+use RobiNN\Pca\Helpers;
+use RobiNN\Pca\Http;
+use RobiNN\Pca\ReadonlyMode;
+use RobiNN\Pca\Template;
+
+class RedisDashboard implements DashboardInterface {
+    use RedisTrait;
+
+    /**
+     * @var array<int, array<string, int|string>>
+     */
+    private array $servers;
+
+    private int $current_server;
+
+    public Compatibility\Redis|Compatibility\Predis|Compatibility\Cluster\RedisCluster|Compatibility\Cluster\PredisCluster $redis;
+
+    public string $client = '';
+
+    public bool $is_cluster = false;
+
+    public bool $is_sentinel = false;
+
+    public string $sentinel_master = '';
+
+    public function __construct(private readonly Template $template, ?string $client = null) {
+        $this->client = $client ?? Config::get('redisoptions.client', 'redis');
+
+        if ($this->client !== 'predis' && !extension_loaded('redis')) {
+            $this->client = 'predis';
+        }
+
+        $this->servers = Config::get('redis', []);
+
+        if (ReadonlyMode::enabled() || !$this->consoleEnabled()) {
+            unset($this->tabs['console']);
+        }
+
+        $server = Http::get('server', 0);
+
+        $this->current_server = array_key_exists($server, $this->servers) ? $server : 0;
+    }
+
+    public static function check(): bool {
+        return extension_loaded('redis') || class_exists(Predis::class);
+    }
+
+    /**
+     * @return array<string, array<int, string>|string>
+     */
+    public function dashboardInfo(): array {
+        return [
+            'key'    => 'redis',
+            'title'  => 'Redis',
+            'colors' => [
+                50  => '#fef3f2',
+                100 => '#fee4e2',
+                200 => '#fececa',
+                300 => '#fcaba5',
+                400 => '#f77b72',
+                500 => '#ee5145',
+                600 => '#dc382c',
+                700 => '#b8281d',
+                800 => '#98241c',
+                900 => '#7f241d',
+                950 => '#450e0a',
+            ],
+        ];
+    }
+
+    /**
+     * Connect to the server.
+     *
+     * @param array<string, mixed> $server
+     *
+     * @throws DashboardException
+     */
+    public function connect(array $server): Compatibility\Redis|Compatibility\Predis|Compatibility\Cluster\RedisCluster|Compatibility\Cluster\PredisCluster {
+        $server['database'] = Http::get('db', $server['database'] ?? 0);
+        $server = $this->resolvePassword($server);
+
+        if (Compatibility\Sentinel::isConfigured($server)) {
+            $master = (new Compatibility\Sentinel($server, $this->client))->masterAddress();
+            $server = array_merge($server, $master);
+
+            $this->is_sentinel = true;
+            $this->sentinel_master = $master['host'].':'.$master['port'];
+        }
+
+        $this->is_cluster = !empty($server['nodes']) && is_array($server['nodes']);
+
+        if ($this->client === 'redis') {
+            $redis = $this->is_cluster ? new Compatibility\Cluster\RedisCluster($server) : new Compatibility\Redis($server);
+        } elseif ($this->client === 'predis') {
+            $redis = $this->is_cluster ? new Compatibility\Cluster\PredisCluster($server) : new Compatibility\Predis($server);
+        } else {
+            throw new DashboardException('Redis extension or Predis is not installed.');
+        }
+
+        return $redis;
+    }
+
+    /**
+     * @param array<string, mixed> $server
+     *
+     * @return array<string, mixed>
+     *
+     * @throws DashboardException
+     */
+    private function resolvePassword(array $server): array {
+        if (empty($server['authfile'])) {
+            return $server;
+        }
+
+        $password = is_readable($server['authfile']) ? file_get_contents($server['authfile']) : false;
+
+        if ($password === false) {
+            throw new DashboardException(sprintf('Unable to read the password file "%s".', $server['authfile']));
+        }
+
+        $server['password'] = trim($password);
+
+        return $server;
+    }
+
+    public function ajax(): string {
+        try {
+            $this->redis = $this->connect($this->servers[$this->current_server]);
+
+            if (isset($_GET['panels'])) {
+                return Helpers::getPanelsJson($this->getPanelsData());
+            }
+
+            if (isset($_GET['metrics'])) {
+                return (new RedisMetrics($this->redis, $this->servers, $this->current_server))->collectAndRespond();
+            }
+
+            if (isset($_GET['pubsub'])) {
+                return $this->pubSubAjax();
+            }
+
+            if (isset($_GET['profiler'])) {
+                return $this->profilerAjax();
+            }
+
+            if (isset($_GET['console'])) {
+                return $this->consoleAjax();
+            }
+
+            if (isset($_GET['view'], $_GET['key'])) {
+                return $this->viewKey();
+            }
+
+            if (isset($_GET['deleteall'])) {
+                if (!Csrf::validateToken(Http::post('csrf_token', ''))) {
+                    return Helpers::alert('Invalid CSRF token.', 'error');
+                }
+
+                return $this->deleteAllKeys();
+            }
+
+            if (isset($_GET['delete'])) {
+                if (!Csrf::validateToken(Http::post('csrf_token', ''))) {
+                    return Helpers::alert('Invalid CSRF token.', 'error');
+                }
+
+                return Helpers::deleteKey(function (string $key): bool {
+                    $delete_key = $this->redis->del($key);
+
+                    return is_int($delete_key) && $delete_key > 0;
+                });
+            }
+        } catch (DashboardException|Exception $e) {
+            if (isset($_GET['panels']) || isset($_GET['metrics'])) {
+                if (!headers_sent()) {
+                    header('Content-Type: application/json');
+                }
+
+                return Helpers::ajaxJson(['error' => $e->getMessage()]);
+            }
+
+            return Helpers::alert($e->getMessage(), 'error');
+        }
+
+        return '';
+    }
+
+    public function dashboard(): string {
+        if ($this->servers === []) {
+            return 'No servers';
+        }
+
+        $this->template->addGlobal('servers', Helpers::serverSelector($this->servers, $this->current_server));
+
+        try {
+            $this->redis = $this->connect($this->servers[$this->current_server]);
+            $this->template->addGlobal('ajax_panels', true);
+            $panels = Helpers::panels($this->getPanelsData());
+            $this->template->addGlobal('side', $this->dbSelect().$panels);
+
+            $tabs = $this->template->render('components/tabs', ['links' => $this->tabs, 'main' => true,]);
+
+            if (isset($_GET['view'], $_GET['key'])) {
+                return $tabs.$this->viewKey();
+            }
+
+            if (isset($_GET['form'])) {
+                return $tabs.$this->form();
+            }
+
+            return $tabs.$this->mainDashboard();
+        } catch (DashboardException|Exception $e) {
+            return $this->template->render('components/alert', ['message' => htmlspecialchars($e->getMessage()), 'alert_color' => 'error', 'inline' => true]);
+        }
+    }
+}

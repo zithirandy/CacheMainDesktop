@@ -1,0 +1,43 @@
+<?php
+/**
+ * CacheMainDesktop web entry.
+ *
+ * Based on the phpCacheAdmin entry point (https://github.com/RobiNN1/phpCacheAdmin), MIT license.
+ * Desktop adaptation: no built-in auth, the Electron window is the entry point and
+ * the server list arrives through PCA_* environment variables.
+ */
+
+declare(strict_types=1);
+
+ini_set('display_errors', 'Off');
+ini_set('display_startup_errors', 'Off');
+error_reporting(E_ALL);
+
+if (getenv('PCA_PHP_MEMORY_LIMIT')) {
+    ini_set('memory_limit', getenv('PCA_PHP_MEMORY_LIMIT'));
+}
+
+$path = __DIR__.'/';
+
+if (is_file(__DIR__.'/vendor/autoload.php')) {
+    require_once __DIR__.'/vendor/autoload.php';
+
+    if (!extension_loaded('redis') &&
+        Composer\InstalledVersions::isInstalled('predis/predis') === false &&
+        is_file($path.'predis.phar')
+    ) {
+        require_once 'phar://'.$path.'predis.phar/vendor/autoload.php';
+    }
+} else {
+    require_once __DIR__.'/src/functions.php';
+    autoload($path);
+}
+
+RobiNN\Pca\Config::loadDotenv($path);
+
+if (RobiNN\Pca\Config::get('debug', false)) {
+    ini_set('display_errors', 'On');
+    ini_set('display_startup_errors', 'On');
+}
+
+echo (new RobiNN\Pca\Admin())->render();

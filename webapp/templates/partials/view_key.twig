@@ -1,0 +1,79 @@
+{% import 'components/macros.twig' as macros %}
+<div class="view-key-name mb-2 text-lg font-semibold break-all dark:text-gray-300">{{ key }}</div>
+<div class="flex flex-wrap gap-x-3 gap-y-2 items-center mb-4 dark:text-gray-300">
+    {% if type %}
+        <span class="inline-flex gap-1 items-center">Type {{ macros.key_type(type) }}</span>
+    {% endif %}
+
+    {% if ttl %}
+        <span class="inline-flex gap-1 items-center">
+            TTL {{ macros.badge(ttl == -1 ? 'Doesn\'t expire' : ttl, 'indigo', 'uppercase') }}
+            {% if expires_at|default('') is not empty %}
+                <span class="text-xs text-gray-600 dark:text-gray-400">until {{ expires_at }}</span>
+            {% endif %}
+        </span>
+    {% endif %}
+
+    {% if size %}
+        <span class="inline-flex gap-1 items-center">Size {{ macros.badge(size, 'sky') }}</span>
+    {% endif %}
+
+    {% if total_items %}
+        <span class="inline-flex gap-1 items-center">Items {{ macros.badge(total_items|number, 'sky') }}</span>
+    {% endif %}
+
+    {% if encoding|default('') is not empty %}
+        <span class="inline-flex gap-1 items-center">Encoding {{ macros.badge(encoding, 'purple') }}</span>
+    {% endif %}
+
+    {% if encode_fn %}
+        <span class="inline-flex gap-1 items-center">Encoded with {{ macros.badge(encode_fn, 'blue', 'uppercase') }}</span>
+        {% set encode_url = '&encoder=' ~ encode_fn %}
+    {% endif %}
+
+    {% if formatted == true %}
+        {{ macros.badge('Formatted', 'blue', 'uppercase') }}
+    {% endif %}
+
+    {% if export_url %}
+        <a href="{{ export_url }}" class="inline-flex gap-1 items-center font-semibold text-gray-600 dark:text-gray-300 hover:text-gray-700 dark:hover:text-gray-300">
+            {{ svg('export', 16) }} Export
+        </a>
+    {% endif %}
+
+    {% if not readonly %}
+        <form method="post" action="{{ view_url|default('') }}" class="inline-flex">
+            <input type="hidden" name="csrf_token" value="{{ csrf }}">
+            <button type="submit" name="delete" class="inline-flex gap-1 items-center font-semibold text-red-500 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300"
+                    data-confirm="Are you sure you want to remove this item?">
+                {{ svg('trash', 16) }} Delete
+            </button>
+        </form>
+    {% endif %}
+</div>
+
+{% if stream_groups is defined and stream_groups.groups is defined %}
+    {{ include('partials/stream_groups.twig') }}
+{% endif %}
+
+{% if vector_set is defined and vector_set.tiles is defined %}
+    {{ include('partials/vector_set.twig') }}
+{% endif %}
+
+{% if value is iterable %}
+    {{ include('partials/view_key_array.twig') }}
+{% else %}
+    <div class="flex flex-wrap gap-3 justify-between items-center mb-4">
+        <span>
+            {% if edit_url and not readonly %}
+                <a href="{{ edit_url ~ encode_url }}" class="inline-flex gap-1 items-center font-semibold text-gray-600 dark:text-gray-300 hover:text-gray-700 dark:hover:text-gray-300">
+                    {{ svg('edit', 16) }} Edit
+                </a>
+            {% endif %}
+        </span>
+        {{ macros.value_modes(value_mode) }}
+    </div>
+    <div class="card">
+        <div class="overflow-auto p-4 dark:text-gray-300">{{ value|raw }}</div>
+    </div>
+{% endif %}

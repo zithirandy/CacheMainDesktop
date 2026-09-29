@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="en" class="scroll-smooth dark:scheme-dark">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="robots" content="noindex, nofollow, noarchive, nosnippet, noimageindex">
+    <title>{{ site_title }} - phpCacheAdmin</title>
+    <link rel="icon" type="image/png" sizes="32x32" href="{{ config('pcapath', '') }}assets/favicon.png">
+    <meta name="theme-color" content="#ffffff">
+    <link rel="stylesheet" href="{{ asset('assets/css/styles.css') }}">
+    <meta name="csrf-token" content="{{ csrf }}">
+
+    {%- if colors -%}
+        <style>
+            :root {
+            {{ colors }}
+            }
+        </style>
+    {%- endif %}
+    <script nonce="{{ nonce }}">
+        const theme = localStorage.getItem('theme') || 'system';
+        let current_theme = theme;
+
+        if (theme === 'system') {
+            current_theme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+            document.documentElement.setAttribute('color-theme', 'system');
+        } else {
+            document.documentElement.setAttribute('color-theme', theme);
+        }
+
+        document.documentElement.classList.toggle('dark', current_theme === 'dark');
+
+        const panels_refresh_interval = {{ config('panelrefresh', 30) * 1000 }};
+        const ajax_panels = {{ ajax_panels is defined and ajax_panels == true ? 'true' : 'false' }};
+        const metrics_refresh_interval = {{ config('metricsrefresh', 30) * 1000 }};
+        const live_refresh_interval = {{ min(max(config('liverefresh', 2), 1), 60) * 1000 }};
+        let metrics_active_filter = '{{ config('metricstab', '1d') in ['1h', '1d', '1w', '1m'] ? config('metricstab', '1d') : '1d' }}';
+        const decimalsep = '{{ config('decimalsep', ',')|e('js') }}';
+        const thousandssep = '{{ config('thousandssep', ' ')|e('js') }}';
+    </script>
+</head>
+<body class="flex flex-col min-h-screen text-gray-900 bg-gray-100 dark:text-gray-200 dark:bg-gray-900" data-dashboard="{{ current }}">
+<div id="alerts">{{ alerts|raw }}</div>
+<header class="flex flex-wrap gap-4 items-center p-4 bg-white border-b border-gray-200 lg:grid lg:grid-cols-3 dark:bg-gray-800 dark:border-gray-700">
+    <div class="flex flex-wrap gap-2 items-center min-w-0">
+        <a class="block shrink-0 w-52 lg:w-80" href="{{ config('url', '/') }}" aria-label="Go to homepage">{{ svg('logo', null) }}</a>
+
+        {% if config('readonly') %}
+            <span class="py-1 px-2 font-bold text-[11px] whitespace-nowrap rounded-full bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200"
+                  title="Nothing can be changed or deleted.">Read-only</span>
+        {% endif %}
+    </div>
+
+    <div class="flex flex-wrap gap-3 items-center lg:gap-4 lg:justify-center">
+        {% for link, item in nav %}
+            {% set link_bg = item.colors ? ' style="--link-bg:' ~ item.colors.500 ~ ';--link-bg-hover:' ~ item.colors.700 ~ ';--link-active:' ~ item.colors.300 ~ ';--link-active-dark:' ~ item.colors.900 ~ ';"' : '' %}
+            {% set server = get('server') and get('dashboard') == link ? '&server=' ~ get('server') : '' %}
+            <a class="dashboard-link{{ current == link ? ' active' : '' }} flex size-9 items-center justify-center rounded-sm text-white" {{ link_bg|raw }} href="?dashboard={{ link ~ server }}" title="{{ item.title }}">
+                {{ svg(item.icon ?? ('dashboards/' ~ item.key), 16) }}
+            </a>
+        {% endfor %}
+    </div>
+
+    <div class="flex flex-wrap gap-3 justify-end items-center sm:ms-auto lg:gap-4 lg:ms-0">
+        {% if servers|default %}
+            <div class="w-full sm:w-60">{{ servers|raw }}</div>
+        {% endif %}
+
+        <div class="flex gap-4 items-center">
+            {% if logout_url is not null %}
+                <form method="post" action="{{ logout_url }}" class="flex">
+                    <input type="hidden" name="csrf_token" value="{{ csrf }}">
+                    <button type="submit" name="pca_logout" value="1" title="Log out"
+                            class="flex gap-2 items-center py-2 px-3 text-sm leading-none text-gray-500 rounded-sm border border-gray-300 cursor-pointer dark:text-gray-400 dark:border-gray-600 hover:text-gray-900 hover:bg-gray-100 dark:hover:text-gray-100 dark:hover:bg-gray-950">
+                        {% if logout_user %}<span class="hidden font-semibold sm:inline">{{ logout_user }}</span>{% endif %}
+                        {{ svg('logout', 18) }}
+                    </button>
+                </form>
+            {% endif %}
+
+            <div class="flex border rounded-sm overflow-hidden border-gray-300 dark:border-gray-600 [&>.active]:text-gray-600 dark:[&>.active]:text-gray-300 [&>.active]:bg-gray-200 dark:[&>.active]:bg-gray-950">
+                <button class="flex justify-center items-center py-2 px-3 text-gray-400 cursor-pointer dark:text-gray-500" type="button" data-theme="light" title="Light">
+                    {{ svg('sun', 18) }}
+                </button>
+                <button class="flex justify-center items-center py-2 px-3 text-gray-400 border-l border-gray-300 cursor-pointer dark:text-gray-500 dark:border-gray-600" type="button" data-theme="dark" title="Dark">
+                    {{ svg('moon', 18) }}
+                </button>
+                <button class="flex justify-center items-center py-2 px-3 text-gray-400 border-l border-gray-300 cursor-pointer dark:text-gray-500 dark:border-gray-600" type="button" data-theme="system" title="System">
+                    {{ svg('system', 18) }}
+                </button>
+            </div>
+
+            <a class="text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100" href="{{ repo }}" title="GitHub" target="_blank" rel="noopener">{{ svg('github', 28) }}</a>
+        </div>
+    </div>
+</header>
+<main id="maincontent" class="flex flex-col flex-1 md:flex-row">
+    {% if side %}
+        <div class="shrink-0 w-full md:w-[30%] lg:w-[20%] bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700">
+            <div class="p-4">
+                {{ side|raw }}
+            </div>
+        </div>
+    {% endif %}
+
+    <div class="flex flex-col flex-1 w-full min-w-0">
+        <div class="flex-1 p-4 min-w-0">
+            {{ dashboard|raw }}
+        </div>
+
+        <footer class="my-4 text-center">
+            <div>
+                &copy; {{ 'now'|date('Y') }}
+                <a class="font-semibold text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-500" href="https://github.com/RobiNN1">RobiNN1</a>.
+                All Rights Reserved.
+            </div>
+            <div class="flex flex-wrap gap-x-2 justify-center items-center">
+                <span>v{{ version }}</span>
+                <a class="font-semibold text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-500" href="{{ repo }}/issues" target="_blank" rel="noopener">Report Issue</a>
+                <a class="flex gap-1 items-center font-semibold text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-500"
+                   href="{{ repo }}" target="_blank" rel="noopener" title="Star phpCacheAdmin on GitHub">
+                    {{ svg('star', 14, 'text-amber-400 shrink-0') }} Star on GitHub
+                </a>
+            </div>
+        </footer>
+    </div>
+</main>
+{% if auth_warning|default(false) %}{{ include('partials/auth_warning.twig') }}{% endif %}
+{{ modals|raw }}
+<script src="{{ asset('assets/js/scripts.js') }}"></script>
+</body>
+</html>

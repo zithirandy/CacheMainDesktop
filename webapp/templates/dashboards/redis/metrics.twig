@@ -1,0 +1,156 @@
+{% if health is not empty %}
+    <div class="mb-4">
+        {{ include('partials/health.twig', {checks: health, grid: 'grid-cols-1 sm:grid-cols-2 xl:grid-cols-4'}) }}
+    </div>
+{% endif %}
+
+{{ include('partials/metrics_header.twig', {dashboard: 'redis', sampling: 'one INFO'}) }}
+
+{{ include('partials/metrics_tiles.twig', {tiles: [
+    {id: 'commands', label: 'Commands'},
+    {id: 'hit_rate', label: 'Hit rate'},
+    {id: 'memory', label: 'Memory'},
+    {id: 'fragmentation', label: 'Fragmentation'},
+]}) }}
+
+<div class="gap-4 lg:grid lg:grid-cols-4">
+    <div class="col-span-4 p-4 mb-2 card">
+        <div id="command_calls_chart" class="h-90"></div>
+    </div>
+    <div class="col-span-2 p-4 mb-2 card">
+        <div id="memory_chart" class="h-90"></div>
+    </div>
+    <div class="col-span-2 p-4 mb-2 card">
+        <div id="fragmentation_chart" class="h-90"></div>
+    </div>
+    <div class="col-span-2 p-4 mb-2 card">
+        <div id="commands_chart" class="h-90"></div>
+    </div>
+    <div class="col-span-2 p-4 mb-2 card">
+        <div id="hit_rate_chart" class="h-90"></div>
+    </div>
+    <div class="col-span-2 p-4 mb-2 card">
+        <div id="connections_chart" class="h-90"></div>
+    </div>
+</div>
+
+<script src="{{ asset('assets/js/echarts.min.js') }}"></script>
+<script nonce="{{ nonce }}">
+    document.addEventListener('DOMContentLoaded', () => {
+        const initial_theme = document.documentElement.classList.contains('dark') ? 'dark' : null;
+
+        const chart_config = {
+            command_calls: echarts.init(document.getElementById('command_calls_chart'), initial_theme, {renderer: 'canvas'}),
+            memory: echarts.init(document.getElementById('memory_chart'), initial_theme, {renderer: 'canvas'}),
+            fragmentation: echarts.init(document.getElementById('fragmentation_chart'), initial_theme, {renderer: 'canvas'}),
+            commands: echarts.init(document.getElementById('commands_chart'), initial_theme, {renderer: 'canvas'}),
+            hit_rate: echarts.init(document.getElementById('hit_rate_chart'), initial_theme, {renderer: 'canvas'}),
+            connections: echarts.init(document.getElementById('connections_chart'), initial_theme, {renderer: 'canvas'}),
+        };
+
+        const render_tiles = (point) => {
+            metric_tile('commands', number_format(point.commands_per_second) + '/s', `${number_format(point.connections)} connections`);
+            metric_tile('hit_rate', number_format(point.hit_rate, 2) + '%', 'share of the keyspace lookups that found a key');
+            metric_tile('memory', format_bytes(point.memory.used), `${format_bytes(point.memory.peak)} peak`);
+            metric_tile(
+                'fragmentation',
+                number_format(point.memory.fragmentation, 2),
+                'ratio of the memory the allocator holds to the memory in use'
+            );
+        };
+
+        const render_charts = (data) => {
+            if (!data || data.length === 0) return;
+            const timestamps = data.map(p => p.timestamp.split(' ')[1]);
+
+            render_tiles(data[data.length - 1]);
+
+            const command_series = [...new Set(data.flatMap(p => Object.keys(p.commands_stats ?? {})))].map(name => ({
+                name: name,
+                type: 'line',
+                stack: 'Total',
+                areaStyle: {},
+                emphasis: {focus: 'series'},
+                data: data.map((p, i) => {
+                    if (i === 0 || !p.commands_stats || !data[i - 1].commands_stats) return 0;
+                    const seconds = Math.max(1, p.unix_timestamp - data[i - 1].unix_timestamp);
+                    const calls = (p.commands_stats?.[name] ?? 0) - (data[i - 1].commands_stats?.[name] ?? 0);
+                    return calls > 0 ? Number((calls / seconds).toFixed(2)) : 0;
+                })
+            })).filter(s => s.data.some(v => v > 0));
+
+            chart(chart_config.command_calls, {
+                title: 'Command Calls per second',
+                legend: command_series.map(s => s.name),
+                tooltip: {
+                    confine: true,
+                    formatter: function (params) {
+                        let html = `<div style="min-width: 450px;">
+                            <strong>${params[0].name}</strong>
+                            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 0 20px;">`;
+
+                        params.forEach(item => {
+                            if (item.value > 0) {
+                                html += `<div class="flex justify-between items-center"><span>${item.marker} ${item.seriesName}</span><strong>${item.value}</strong></div>`;
+                            }
+                        });
+
+                        html += '</div></div>';
+                        return html;
+                    }
+                },
+                yAxis: {type: 'value', name: 'Calls/s'},
+                series: command_series
+            }, timestamps);
+
+            chart(chart_config.memory, {
+                title: 'Memory Usage',
+                legend: ['Used', 'Peak'],
+                yAxis: {type: 'value', name: 'Memory', axisLabel: {formatter: '{value} MB'}},
+                series: [
+                    {name: 'Used', type: 'line', data: data.map(p => (p.memory.used / 1048576).toFixed(2)), areaStyle: {}},
+                    {name: 'Peak', type: 'line', data: data.map(p => (p.memory.peak / 1048576).toFixed(2))},
+                ],
+            }, timestamps);
+
+            chart(chart_config.fragmentation, {
+                title: 'Fragmentation Ratio',
+                legend: ['Ratio'],
+                yAxis: {type: 'value', name: 'Ratio'},
+                series: [
+                    {name: 'Ratio', type: 'line', data: data.map(p => p.memory.fragmentation), areaStyle: {}},
+                ],
+            }, timestamps);
+
+            chart(chart_config.commands, {
+                title: 'Commands per second',
+                legend: ['Commands'],
+                yAxis: {type: 'value', name: 'ops/sec'},
+                series: [
+                    {name: 'Commands', type: 'line', data: data.map(p => p.commands_per_second), areaStyle: {}},
+                ],
+            }, timestamps);
+
+            chart(chart_config.hit_rate, {
+                title: 'Hit Rate',
+                tooltip: {valueFormatter: v => v.toFixed(2) + '%'},
+                legend: ['Hit Rate'],
+                yAxis: {type: 'value', min: 0, max: 100, axisLabel: {formatter: '{value}%'}},
+                series: [
+                    {name: 'Hit Rate', type: 'line', data: data.map(p => p.hit_rate), areaStyle: {}},
+                ],
+            }, timestamps);
+
+            chart(chart_config.connections, {
+                title: 'Connections',
+                legend: ['Connections'],
+                yAxis: {type: 'value', name: 'Clients'},
+                series: [
+                    {name: 'Connections', type: 'line', data: data.map(p => p.connections), areaStyle: {}},
+                ],
+            }, timestamps);
+        };
+
+        new Metrics(render_charts, chart_config);
+    });
+</script>

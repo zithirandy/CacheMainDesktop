@@ -1,0 +1,17 @@
+# Dependencies
+node_modules/
+
+# Portable PHP runtime (downloaded by scripts/fetch-php.mjs)
+php/
+
+# Build output
+dist/
+out/
+
+# Runtime data
+webapp/tmp/*
+!webapp/tmp/.gitkeep
+
+# Misc
+*.log
+.DS_Store

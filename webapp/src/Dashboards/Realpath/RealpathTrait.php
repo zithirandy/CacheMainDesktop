@@ -1,0 +1,94 @@
+<?php
+/**
+ * This file is part of the phpCacheAdmin.
+ * Copyright (c) Róbert Kelčák (https://kelcak.com/)
+ */
+
+declare(strict_types=1);
+
+namespace RobiNN\Pca\Dashboards\Realpath;
+
+use RobiNN\Pca\Format;
+use RobiNN\Pca\Helpers;
+use RobiNN\Pca\Http;
+use RobiNN\Pca\Paginator;
+
+trait RealpathTrait {
+    use RealpathHealth;
+
+    /**
+     * @var array<string, string>
+     */
+    private array $tabs = [
+        'keys'   => 'Keys',
+        'health' => 'Health',
+    ];
+
+    private function mainDashboard(): string {
+        $tab = Http::get('tab', '');
+        $tab = array_key_exists($tab, $this->tabs) ? $tab : array_key_first($this->tabs);
+
+        if ($tab === 'health') {
+            return $this->template->render('partials/health', ['checks' => $this->getHealthChecks()]);
+        }
+
+        $paginator = new Paginator($this->getAllKeys());
+
+        return $this->template->render('dashboards/realpath', [
+            'keys'      => $paginator->getPaginated(),
+            'all_keys'  => count($this->all_keys),
+            'paginator' => $paginator->render(),
+        ]);
+    }
+
+    private function panels(): string {
+        $total_memory = Format::iniSizeToBytes((string) ini_get('realpath_cache_size'));
+        $memory_used = realpath_cache_size();
+        $memory_usage = $total_memory > 0 ? round(($memory_used / $total_memory) * 100, 2) : 0;
+
+        $panels = [
+            [
+                'title' => 'Realpath info',
+                'data'  => [
+                    'Total' => Format::bytes($total_memory, 1),
+                    ['Used', Format::bytes($memory_used).' ('.$memory_usage.'%)', $memory_usage],
+                ],
+            ],
+            [
+                'title' => 'Keys',
+                'data'  => [
+                    'TTL'    => ini_get('realpath_cache_ttl'),
+                    'Cached' => Format::number(count($this->all_keys)),
+                ],
+            ],
+        ];
+
+        return Helpers::panels($panels);
+    }
+
+    /**
+     * @return array<int, array<string, string|int>>
+     */
+    private function getAllKeys(): array {
+        $keys = [];
+        $search = Http::get('s', '');
+
+        $this->template->addGlobal('search_value', $search);
+
+        foreach ($this->all_keys as $key_name => $key_data) {
+            if (stripos($key_name, $search) !== false) {
+                $keys[] = [
+                    'key'  => $key_name,
+                    'info' => [
+                        'title'    => $key_name,
+                        'realpath' => $key_data['realpath'],
+                        'is_dir'   => $key_data['is_dir'] ? 'true' : 'false',
+                        'ttl'      => $key_data['expires'] - time(),
+                    ],
+                ];
+            }
+        }
+
+        return Helpers::sortKeys($keys);
+    }
+}

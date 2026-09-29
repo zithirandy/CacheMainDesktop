@@ -1,0 +1,87 @@
+{% macro progress(percentage, type = 'lower', id = null, status = null) %}
+    {% if status %}
+        {% set color = {healthy: 'bg-green-600', warning: 'bg-orange-600', critical: 'bg-red-600', info: 'bg-blue-600'}[status] ?? 'bg-gray-400' %}
+    {% elseif type == 'higher' %}{# higher is better #}
+        {% if percentage >= 80 %}
+            {% set color = 'bg-green-600' %}
+        {% elseif percentage >= 50 %}
+            {% set color = 'bg-orange-600' %}
+        {% else %}
+            {% set color = 'bg-red-600' %}
+        {% endif %}
+    {% else %}{# lower is better #}
+        {% if percentage <= 50 %}
+            {% set color = 'bg-green-600' %}
+        {% elseif percentage <= 80 %}
+            {% set color = 'bg-orange-600' %}
+        {% else %}
+            {% set color = 'bg-red-600' %}
+        {% endif %}
+    {% endif %}
+
+    <div class="mb-0.5 w-full h-1.5 bg-gray-200 rounded-full dark:bg-gray-700">
+        <div class="{{ color }} h-1.5 rounded-full transition-[width,background-color] duration-500 ease-in-out" style="width: {{ percentage }}%;"{{ id ? ' data-progress="%s" data-type="%s"'|format(id, type)|raw : '' }}></div>
+    </div>
+{% endmacro %}
+
+{% macro checkbox(class, disabled, id, label = null, checked = false) %}
+    {% set aria_label = label ?: ('check-all' in class ? 'Select all keys' : 'Select key') %}
+    <input type="checkbox"{{ id ? ' id="%s" name="%s"'|format(id, id)|raw : '' }}{{ checked ? ' checked' : '' }}
+           class="checkbox text-primary-500 -mt-1.5 h-4 w-4 select-none appearance-none rounded border border-gray-300 bg-white align-middle
+       checked:border-primary-200 checked:bg-primary-500 focus:outline-hidden focus:ring-3 focus:ring-primary-200 focus:border-primary-300
+       dark:bg-gray-900 dark:border-gray-600 dark:checked:bg-primary-500 dark:checked:border-primary-800 dark:focus:ring-primary-400 dark:focus:border-primary-500{{ class|space }}"
+           aria-label="{{ aria_label|e }}"{{ (disabled is defined and disabled) ? ' disabled' : '' }}>
+{% endmacro %}
+
+{% macro badge(text, color, class = '') %}
+    {% set colors = {
+        green: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200',
+        sky: 'bg-sky-100 text-sky-800 dark:bg-sky-900 dark:text-sky-200',
+        orange: 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200',
+        red: 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200',
+        purple: 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200',
+        indigo: 'bg-indigo-100 text-indigo-800 dark:bg-indigo-900 dark:text-indigo-200',
+        blue: 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200',
+    } %}
+
+    <span class="inline-block py-1 px-3 font-bold text-xs rounded-full {{ colors[color] ?? colors.blue }}{{ class|space }}">{{ text }}</span>
+{% endmacro %}
+
+{% macro key_type(type) %}
+    {% set type_colors = {
+        string: 'green',
+        set: 'sky',
+        list: 'orange',
+        zset: 'red',
+        hash: 'purple',
+        stream: 'indigo',
+        json: 'blue',
+        vectorset: 'purple',
+    } %}
+
+    {{ _self.badge(type, type_colors[type] ?? 'blue', 'uppercase') }}
+{% endmacro %}
+
+{% macro value_modes(current) %}
+    {% set modes = {formatted: 'Formatted', raw: 'Raw', hex: 'Hex'} %}
+    {% set active = current|default('formatted') %}
+
+    <div class="flex overflow-hidden rounded-sm border border-gray-300 dark:border-gray-600 [&>.active]:text-gray-600 dark:[&>.active]:text-gray-300 [&>.active]:bg-gray-200 dark:[&>.active]:bg-gray-950">
+        {% for mode, label in modes %}
+            <a href="{{ link(['key', 'view', 'p', 'pp', 'subsearch', 'ttl'], {value_mode: mode}) }}" title="{{ label }}"
+               class="flex justify-center items-center py-2 px-3 text-xs font-semibold text-gray-400 cursor-pointer dark:text-gray-500{{ not loop.first ? ' border-l border-gray-300 dark:border-gray-600' : '' }}{{ active == mode ? ' active' : '' }}">{{ label }}</a>
+        {% endfor %}
+    </div>
+{% endmacro %}
+
+{% macro health_status(status) %}
+    {% set statuses = {
+        healthy: {color: 'green', label: 'Healthy'},
+        warning: {color: 'orange', label: 'Warning'},
+        critical: {color: 'red', label: 'Critical'},
+        info: {color: 'blue', label: 'Info'},
+    } %}
+    {% set meta = statuses[status] ?? statuses.info %}
+
+    {{ _self.badge(meta.label, meta.color, 'shrink-0') }}
+{% endmacro %}

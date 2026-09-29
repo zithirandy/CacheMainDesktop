@@ -1,0 +1,186 @@
+{% if health is not empty %}
+    <div class="mb-4">
+        {{ include('partials/health.twig', {checks: health, grid: 'grid-cols-1 sm:grid-cols-2 xl:grid-cols-4'}) }}
+    </div>
+{% endif %}
+
+{{ include('partials/metrics_header.twig', {dashboard: 'memcached', sampling: 'one "stats" command'}) }}
+
+{{ include('partials/metrics_tiles.twig', {tiles: [
+    {id: 'ops', label: 'Operations'},
+    {id: 'hit_rate', label: 'Hit rate'},
+    {id: 'traffic', label: 'Traffic'},
+    {id: 'evictions', label: 'Evictions'},
+]}) }}
+
+<div class="gap-4 lg:grid lg:grid-cols-4">
+    <div class="col-span-4 p-4 mb-2 card">
+        <div id="hit_rate_chart" class="h-90"></div>
+    </div>
+    <div class="col-span-2 p-4 mb-2 card">
+        <div id="memory_chart" class="h-90"></div>
+    </div>
+    <div class="col-span-2 p-4 mb-2 card">
+        <div id="items_chart" class="h-90"></div>
+    </div>
+    <div class="col-span-2 p-4 mb-2 card">
+        <div id="request_rate_chart" class="h-90"></div>
+    </div>
+    <div class="col-span-2 p-4 mb-2 card">
+        <div id="request_dist_chart" class="h-90"></div>
+    </div>
+    <div class="col-span-2 p-4 mb-2 card">
+        <div id="connections_chart" class="h-90"></div>
+    </div>
+    <div class="col-span-2 p-4 mb-2 card">
+        <div id="traffic_chart" class="h-90"></div>
+    </div>
+</div>
+
+<script src="{{ asset('assets/js/echarts.min.js') }}"></script>
+<script nonce="{{ nonce }}">
+    document.addEventListener('DOMContentLoaded', () => {
+        const initial_theme = document.documentElement.classList.contains('dark') ? 'dark' : null;
+
+        const chart_config = {
+            hit_rate: echarts.init(document.getElementById('hit_rate_chart'), initial_theme, {renderer: 'canvas'}),
+            memory: echarts.init(document.getElementById('memory_chart'), initial_theme, {renderer: 'canvas'}),
+            items: echarts.init(document.getElementById('items_chart'), initial_theme, {renderer: 'canvas'}),
+            request_rate: echarts.init(document.getElementById('request_rate_chart'), initial_theme, {renderer: 'canvas'}),
+            request_dist: echarts.init(document.getElementById('request_dist_chart'), initial_theme, {renderer: 'canvas'}),
+            connections: echarts.init(document.getElementById('connections_chart'), initial_theme, {renderer: 'canvas'}),
+            traffic: echarts.init(document.getElementById('traffic_chart'), initial_theme, {renderer: 'canvas'}),
+        };
+
+        const HIT_RATE_COMMANDS = ['get', 'delete', 'incr', 'decr', 'cas', 'touch'];
+        const REQUEST_RATE_COMMANDS = ['get', 'set', 'delete', 'incr', 'decr', 'cas', 'touch', 'flush'];
+
+        const render_tiles = (point) => {
+            const per_second = (value) => number_format(value, value > 0 && value < 10 ? 2 : 0) + '/s';
+
+            metric_tile(
+                'ops',
+                per_second(point.request_rates.overall),
+                `get ${per_second(point.request_rates.get)}, set ${per_second(point.request_rates.set)}`
+            );
+            metric_tile('hit_rate', number_format(point.hit_rates.overall, 2) + '%', `get ${number_format(point.hit_rates.get, 2)}%`);
+            metric_tile(
+                'traffic',
+                format_bytes(point.traffic.received_rate) + '/s in',
+                `${format_bytes(point.traffic.sent_rate)}/s out`
+            );
+            metric_tile(
+                'evictions',
+                per_second(point.eviction_rate),
+                `${per_second(point.expired_rate)} expired, ${number_format(point.stored_items)} items stored`
+            );
+        };
+
+        const render_charts = (data) => {
+            if (!data || data.length === 0) return;
+            const timestamps = data.map(p => p.timestamp.split(' ')[1]);
+
+            render_tiles(data[data.length - 1]);
+
+            const hit_rate_series = HIT_RATE_COMMANDS.map(cmd => ({
+                name: cmd,
+                type: 'line',
+                data: data.map(p => p.hit_rates[cmd] || 0)
+            }));
+            hit_rate_series.unshift({
+                name: 'overall',
+                type: 'line',
+                data: data.map(p => p.hit_rates['overall'] || 0),
+                lineStyle: {width: 3}
+            });
+            chart(chart_config.hit_rate, {
+                title: 'Hit Rate',
+                tooltip: {valueFormatter: v => v.toFixed(2) + '%'},
+                legend: ['overall', ...HIT_RATE_COMMANDS],
+                yAxis: {type: 'value', min: 0, max: 100, axisLabel: {formatter: '{value}%'}},
+                series: hit_rate_series,
+            }, timestamps);
+
+            chart(chart_config.memory, {
+                title: 'Memory',
+                legend: ['Used', 'Limit'],
+                yAxis: {type: 'value', axisLabel: {formatter: '{value} MB'}},
+                series: [
+                    {name: 'Used', type: 'line', data: data.map(p => (p.memory_used / 1048576).toFixed(2)), areaStyle: {}},
+                    {name: 'Limit', type: 'line', data: data.map(p => (p.memory_limit / 1048576).toFixed(2))}
+                ],
+            }, timestamps);
+
+            chart(chart_config.items, {
+                title: 'Stored Items',
+                legend: ['Items', 'Evictions/s', 'Expired/s'],
+                yAxis: [{type: 'value', name: 'Items'}, {type: 'value', name: 'Rate', splitLine: {show: false}}],
+                series: [
+                    {name: 'Items', type: 'line', yAxisIndex: 0, data: data.map(p => p.stored_items), areaStyle: {}},
+                    {name: 'Evictions/s', type: 'line', yAxisIndex: 1, data: data.map(p => p.eviction_rate)},
+                    {name: 'Expired/s', type: 'line', yAxisIndex: 1, data: data.map(p => p.expired_rate)}
+                ],
+            }, timestamps);
+
+            const request_rate_series = REQUEST_RATE_COMMANDS.map(cmd => ({
+                name: cmd,
+                type: 'line',
+                data: data.map(p => p.request_rates[cmd] || 0)
+            }));
+            request_rate_series.unshift({
+                name: 'overall',
+                type: 'line',
+                data: data.map(p => p.request_rates['overall'] || 0),
+                lineStyle: {width: 3}
+            });
+            chart(chart_config.request_rate, {
+                title: 'Request Rate',
+                tooltip: {valueFormatter: v => v.toFixed(2) + ' req/s'},
+                legend: ['overall', ...REQUEST_RATE_COMMANDS],
+                yAxis: {type: 'value', name: 'req/s'},
+                series: request_rate_series,
+            }, timestamps);
+
+            chart(chart_config.request_dist, {
+                title: 'Request Distribution',
+                tooltip: {valueFormatter: v => v + '%'},
+                legend: REQUEST_RATE_COMMANDS,
+                yAxis: {type: 'value', min: 0, max: 100, axisLabel: {formatter: '{value}%'}},
+                series: REQUEST_RATE_COMMANDS.map(cmd => ({
+                    name: cmd,
+                    type: 'line',
+                    stack: 'Total',
+                    areaStyle: {},
+                    emphasis: {focus: 'series'},
+                    data: data.map(p => {
+                        const total = p.request_rates['overall'] || 1;
+                        return total > 0 ? ((p.request_rates[cmd] || 0) / total * 100).toFixed(2) : 0;
+                    })
+                })),
+            }, timestamps);
+
+            chart(chart_config.connections, {
+                title: 'Connections',
+                legend: ['Active', 'New Rate'],
+                yAxis: {type: 'value', name: 'Count / Rate'},
+                series: [
+                    {name: 'Active', type: 'line', data: data.map(p => p.connections)},
+                    {name: 'New Rate', type: 'line', data: data.map(p => p.new_connection_rate)}
+                ],
+            }, timestamps);
+
+            chart(chart_config.traffic, {
+                title: 'Data Traffic',
+                tooltip: {valueFormatter: (value) => (value / 1024).toFixed(2) + ' KB/s'},
+                legend: ['Received', 'Sent'],
+                yAxis: {type: 'value', name: 'Bytes/sec'},
+                series: [
+                    {name: 'Received', type: 'line', data: data.map(p => p.traffic.received_rate), areaStyle: {}},
+                    {name: 'Sent', type: 'line', data: data.map(p => p.traffic.sent_rate), areaStyle: {}}
+                ],
+            }, timestamps);
+        };
+
+        new Metrics(render_charts, chart_config);
+    });
+</script>

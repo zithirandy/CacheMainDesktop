@@ -1,0 +1,22 @@
+{
+  "name": "cachemaindesktop",
+  "productName": "CacheMainDesktop",
+  "version": "1.0.0",
+  "description": "Desktop wrapper for phpCacheAdmin - a web dashboard for your favorite caching system.",
+  "license": "MIT",
+  "main": "main.mjs",
+  "type": "module",
+  "scripts": {
+    "fetch-php": "node scripts/fetch-php.mjs",
+    "build:css": "npx @tailwindcss/cli -i webapp/assets/css/src.css -o webapp/assets/css/styles.css",
+    "watch:css": "npx @tailwindcss/cli -i webapp/assets/css/src.css -o webapp/assets/css/styles.css --watch",
+    "test": "node --test \"test/*.test.mjs\"",
+    "smoke": "node scripts/smoke.mjs",
+    "start": "electron .",
+    "dist": "electron-builder --win zip"
+  },
+  "devDependencies": {
+    "electron": "latest",
+    "electron-builder": "latest"
+  }
+}

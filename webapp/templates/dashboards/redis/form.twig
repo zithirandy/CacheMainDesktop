@@ -1,0 +1,126 @@
+<form method="post">
+    <input type="hidden" name="csrf_token" value="{{ csrf }}">
+    <input type="hidden" name="old_key" value="{{ key }}">
+    <input type="hidden" name="old_value" value="{{ value }}">
+
+    {{ include('components/select.twig', {
+        id: 'rtype',
+        label: 'Type',
+        options: types,
+        class: 'w-full',
+        selected: type,
+    }) }}
+
+    <div class="md:grid md:grid-cols-2 md:gap-2">
+        {{ include('components/input.twig', {
+            id: 'key',
+            label: 'Key',
+            value: key,
+            required: true,
+        }) }}
+
+        {{ include('components/input.twig', {
+            id: 'expire',
+            label: 'Expire (in seconds)',
+            type: 'number',
+            help: '-1 removes expiration (default).',
+            value: expire,
+            attr: 'min="-1" max="2147483647"',
+        }) }}
+    </div>
+
+    {{ include('components/input.twig', {
+        id: 'index',
+        label: 'List Index',
+        type: 'number',
+        extra_attr: 'style="display: ' ~ (type == 'list' ? 'block' : 'none') ~ ';" id="redis_index"',
+        help: 'Empty to append, -1 to prepend.',
+        value: index,
+    }) }}
+
+    {{ include('components/input.twig', {
+        id: 'score',
+        label: 'Zset Score',
+        type: 'number',
+        extra_attr: 'style="display: ' ~ (type == 'zset' ? 'block' : 'none') ~ ';" id="redis_score"',
+        value: score,
+    }) }}
+
+    <div class="md:grid md:grid-cols-2 md:gap-2">
+        {{ include('components/input.twig', {
+            id: 'hash_key',
+            label: 'Hash Key',
+            extra_attr: 'style="display: ' ~ (type == 'hash' ? 'block' : 'none') ~ ';" id="redis_hash_key"',
+            value: hash_key,
+        }) }}
+
+        {% if hash_ttl_supported %}
+            {{ include('components/input.twig', {
+                id: 'hash_expire',
+                label: 'Field expiration (in seconds)',
+                type: 'number',
+                extra_attr: 'style="display: ' ~ (type == 'hash' ? 'block' : 'none') ~ ';" id="redis_hash_expire"',
+                help: 'Expiration of this field only, -1 removes it (default). Saving a field always resets it.',
+                value: hash_expire,
+                attr: 'min="-1" max="2147483647"',
+            }) }}
+        {% endif %}
+    </div>
+
+    {{ include('components/input.twig', {
+        id: 'stream_id',
+        label: 'Stream Entry ID',
+        extra_attr: 'style="display: ' ~ (type == 'stream' ? 'block' : 'none') ~ ';" id="redis_stream_id"',
+        help: 'Use * to let Redis generate the ID.',
+        value: stream_id,
+    }) }}
+
+    {{ include('components/input.twig', {
+        id: 'element',
+        label: 'Element',
+        extra_attr: 'style="display: ' ~ (type == 'vectorset' ? 'block' : 'none') ~ ';" id="redis_element"',
+        help: 'Name of the element the vector belongs to.',
+        value: element,
+    }) }}
+
+    {% if encoders %}
+        {{ include('components/select.twig', {
+            id: 'encoder',
+            label: 'Encode function',
+            options: encoders,
+            class: 'w-full',
+            selected: encoder,
+        }) }}
+    {% endif %}
+
+    {{ include('components/textarea.twig', {
+        id: 'value',
+        label: 'Value',
+        value: value,
+    }) }}
+
+    {{ include('components/button.twig', {
+        text: 'Save key',
+        icon: 'save',
+        id: 'submit',
+        color: 'green',
+        submit: true,
+    }) }}
+</form>
+
+<script nonce="{{ nonce }}">
+    document.getElementById('rtype').addEventListener('change', e => {
+        document.getElementById('redis_index').style.display = e.target.value === 'list' ? 'block' : 'none';
+        document.getElementById('redis_score').style.display = e.target.value === 'zset' ? 'block' : 'none';
+        document.getElementById('score').required = e.target.value === 'zset';
+        document.getElementById('redis_hash_key').style.display = e.target.value === 'hash' ? 'block' : 'none';
+        document.getElementById('hash_key').required = e.target.value === 'hash';
+        const hash_expire = document.getElementById('redis_hash_expire');
+        if (hash_expire) {
+            hash_expire.style.display = e.target.value === 'hash' ? 'block' : 'none';
+        }
+        document.getElementById('redis_stream_id').style.display = e.target.value === 'stream' ? 'block' : 'none';
+        document.getElementById('redis_element').style.display = e.target.value === 'vectorset' ? 'block' : 'none';
+        document.getElementById('element').required = e.target.value === 'vectorset';
+    });
+</script>

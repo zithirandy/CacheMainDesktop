@@ -1,0 +1,271 @@
+<?php
+/**
+ * This file is part of the phpCacheAdmin.
+ * Copyright (c) Róbert Kelčák (https://kelcak.com/)
+ */
+
+declare(strict_types=1);
+
+namespace RobiNN\Pca\Dashboards\Redis;
+
+use Exception;
+use PDO;
+use RobiNN\Pca\Config;
+use RobiNN\Pca\Csrf;
+use RobiNN\Pca\Dashboards\DashboardException;
+use RobiNN\Pca\Format;
+use RobiNN\Pca\Helpers;
+use RobiNN\Pca\Http;
+use RobiNN\Pca\Paginator;
+
+trait RedisTrait {
+    use RedisTypes;
+    use RedisPanels;
+    use RedisHealth;
+    use RedisAnalysis;
+    use RedisLatency;
+    use RedisClients;
+    use RedisKeyView;
+    use RedisKeysList;
+    use RedisStreamGroups;
+    use RedisVectorSet;
+    use RedisProfiler;
+    use RedisPubSub;
+    use RedisConsole;
+
+    /**
+     * @var array<string, string>
+     */
+    private array $tabs = [
+        'keys'     => 'Keys',
+        'analysis' => 'Analysis',
+        'slowlog'  => 'Slow Log',
+        'latency'  => 'Latency',
+        'metrics'  => 'Metrics',
+        'clients'  => 'Clients',
+        'pubsub'   => 'Pub/Sub',
+        'profiler' => 'Profiler',
+        'console'  => 'Console',
+        'moreinfo' => 'More info',
+    ];
+
+    /**
+     * @throws Exception
+     */
+    private function deleteAllKeys(): string {
+        if ($this->redis->flushDatabase()) {
+            return Helpers::alert('All keys from the current database have been removed.', 'success');
+        }
+
+        return Helpers::alert('An error occurred while deleting all keys.', 'error');
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function moreinfoTab(): array {
+        try {
+            $info = $this->redis->getInfo();
+
+            foreach ($this->redis->getModules() as $module) {
+                $info['modules'][$module['name']] = $module['ver'];
+            }
+
+            if (extension_loaded('redis')) {
+                $info += Helpers::getExtIniInfo('redis');
+            }
+
+            return ['array' => Helpers::convertTypesToString($info)];
+        } catch (Exception $e) {
+            return ['tab_error' => $e->getMessage()];
+        }
+    }
+
+    /**
+     * @return array<int, string>
+     *
+     * @throws Exception
+     */
+    private function getDatabases(): array {
+        $databases = [];
+
+        if (isset($this->servers[$this->current_server]['databases'])) {
+            $db_count = (int) $this->servers[$this->current_server]['databases'];
+        } else {
+            $config = $this->redis->config('GET', 'databases');
+            $db_count = (int) ($config['databases'] ?? 16);
+        }
+
+        $keyspace = $this->redis->parseSectionData('keyspace');
+
+        for ($d = 0; $d < $db_count; $d++) {
+            $label = 'Database '.$d;
+
+            if (isset($keyspace['db'.$d]['keys'])) {
+                $count = (int) $keyspace['db'.$d]['keys'];
+                $label .= ' ('.Format::number($count).' keys)';
+            }
+
+            $databases[$d] = $label;
+        }
+
+        return $databases;
+    }
+
+    private function dbSelect(): string {
+        if ($this->is_cluster) {
+            return '';
+        }
+
+        try {
+            $databases = $this->template->render('components/select', [
+                'id'         => 'db_select',
+                'options'    => $this->getDatabases(),
+                'selected'   => Http::get('db', $this->servers[$this->current_server]['database'] ?? 0),
+                'aria_label' => 'Database',
+            ]);
+        } catch (DashboardException|Exception) {
+            $databases = '';
+        }
+
+        return $databases;
+    }
+
+    /**
+     * @return array<string, mixed>
+     *
+     * @throws Exception
+     */
+    private function keysTab(): array {
+        if (isset($_POST['submit_import_key'])) {
+            if (Csrf::validateToken(Http::post('csrf_token', ''))) {
+                Helpers::import(
+                    function (string $key): bool {
+                        $exists = $this->redis->exists($key);
+
+                        return is_int($exists) && $exists > 0;
+                    },
+                    function (string $key, string $value, int $ttl): bool {
+                        if ($value === '' || strlen($value) % 2 !== 0 || !ctype_xdigit($value)) {
+                            return false;
+                        }
+
+                        return $this->redis->restoreKeys($key, ($ttl === -1 ? 0 : $ttl), (string) hex2bin($value));
+                    }
+                );
+            } else {
+                echo Helpers::alert('Invalid CSRF token.', 'error');
+            }
+        }
+
+        $keys = Helpers::sortBeforePaginate($this->getAllKeys(), ['link_title' => true]);
+
+        if (isset($_GET['export_btn'])) {
+            Helpers::export($this->keysTableView($keys), 'redis_backup', fn (string $key): string => bin2hex($this->redis->dump($key)));
+        }
+
+        $paginator = new Paginator($keys);
+        $paginated_keys = $paginator->getPaginated();
+
+        if (Http::get('view', Config::get('listview', 'table')) === 'tree') {
+            $keys_to_display = $this->keysTreeView($paginated_keys);
+        } else {
+            $keys_to_display = $this->keysTableView($paginated_keys);
+        }
+
+        return [
+            'keys'      => $keys_to_display,
+            'all_keys'  => $this->redis->databaseSize(),
+            'paginator' => $paginator->render(),
+            'view_key'  => Http::queryString(['s'], ['view' => 'key', 'key' => '__key__']),
+        ];
+    }
+
+    /**
+     * @return array<string, mixed>
+     *
+     * @throws Exception
+     */
+    private function slowlogTab(): array {
+        if (!$this->isCommandSupported('SLOWLOG')) {
+            return ['tab_error' => 'Slowlog is disabled on your server.'];
+        }
+
+        if (isset($_POST['resetlog'])) {
+            if (!Csrf::validateToken(Http::post('csrf_token', ''))) {
+                Helpers::alert('Invalid CSRF token.', 'error');
+            } else {
+                $this->redis->resetSlowlog();
+                Http::redirect(['tab']);
+            }
+        }
+
+        if (isset($_POST['save'])) {
+            if (!Csrf::validateToken(Http::post('csrf_token', ''))) {
+                Helpers::alert('Invalid CSRF token.', 'error');
+            } else {
+                $this->redis->execConfig('SET', 'slowlog-max-len', Http::post('slowlog_max_items', '50'));
+                $this->redis->execConfig('SET', 'slowlog-log-slower-than', Http::post('slowlog_slower_than', '1000'));
+                Http::redirect(['tab']);
+            }
+        }
+
+        $slowlog_max_items = (int) $this->redis->execConfig('GET', 'slowlog-max-len')['slowlog-max-len'];
+        $slowlog_items = $this->redis->getSlowlog($slowlog_max_items);
+        $slowlog_slower_than = $this->redis->execConfig('GET', 'slowlog-log-slower-than')['slowlog-log-slower-than'];
+
+        return [
+            'slowlog' => [
+                'items'       => $slowlog_items ?? [],
+                'max_items'   => $slowlog_max_items,
+                'slower_than' => $slowlog_slower_than ?? 1000,
+            ],
+        ];
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function metricsTab(): array {
+        if (!in_array('sqlite', PDO::getAvailableDrivers(), true)) {
+            return ['tab_error' => 'Metrics are disabled because the PDO SQLite driver is not available. Install the sqlite3 extension for PHP.'];
+        }
+
+        try {
+            $health = $this->getHealthChecks($this->redis->getInfo());
+        } catch (Exception) {
+            $health = [];
+        }
+
+        return ['health' => $health];
+    }
+
+    /**
+     * @throws Exception
+     */
+    private function mainDashboard(): string {
+        $tab = Http::get('tab', '');
+        $tab = array_key_exists($tab, $this->tabs) ? $tab : array_key_first($this->tabs);
+
+        $tab_data = match ($tab) {
+            'keys' => $this->keysTab(),
+            'analysis' => $this->analysisTab(),
+            'slowlog' => $this->slowlogTab(),
+            'latency' => $this->latencyTab(),
+            'metrics' => $this->metricsTab(),
+            'clients' => $this->clientsTab(),
+            'profiler' => $this->profilerTab(),
+            'moreinfo' => ['data' => $this->moreinfoTab(), 'tpl' => 'partials/info_table'],
+            default => [],
+        };
+
+        $tpl = $tab_data['tpl'] ?? 'dashboards/redis/'.$tab;
+        $data = $tab_data['data'] ?? $tab_data;
+
+        if (isset($data['tab_error'])) {
+            return htmlspecialchars((string) $data['tab_error']);
+        }
+
+        return $this->template->render($tpl, $data);
+    }
+}

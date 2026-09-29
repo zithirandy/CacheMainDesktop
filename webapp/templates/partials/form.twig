@@ -1,0 +1,45 @@
+<form method="post">
+    <input type="hidden" name="csrf_token" value="{{ csrf }}">
+    <input type="hidden" name="old_key" value="{{ key }}">
+
+    <div class="md:grid md:grid-cols-2 md:gap-2">
+        {{ include('components/input.twig', {
+            id: 'key',
+            label: 'Key',
+            value: key,
+            required: true,
+        }) }}
+
+        {{ include('components/input.twig', {
+            id: 'expire',
+            label: 'Expire (in seconds)',
+            type: 'number',
+            help: '0 removes expiration (default).',
+            value: expire,
+            attr: exp_attr,
+        }) }}
+    </div>
+
+    {% if encoders %}
+        {{ include('components/select.twig', {
+            id: 'encoder',
+            label: 'Encode function',
+            options: encoders,
+            selected: encoder,
+        }) }}
+    {% endif %}
+
+    {{ include('components/textarea.twig', {
+        id: 'value',
+        label: 'Value',
+        value: value,
+    }) }}
+
+    {{ include('components/button.twig', {
+        text: 'Save key',
+        icon: 'save',
+        id: 'submit',
+        color: 'green',
+        submit: true,
+    }) }}
+</form>

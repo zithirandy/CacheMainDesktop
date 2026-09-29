@@ -1,0 +1,19 @@
+{{ include('partials/keys_list.twig', {
+    treeview: true,
+    buttons: {
+        import_btn: true,
+        export_btn: true,
+        add_new_btn: true,
+    },
+    head_items: [
+        {title: 'Key', sort: 'link_title'},
+        {title: 'Size', class: 'w-24', sort: 'bytes_size'},
+        {title: 'Hits', class: 'w-16', sort: 'number_hits'},
+        {title: 'Last used', class: 'w-32', sort: 'timediff_last_used'},
+        {title: 'Created', class: 'w-44 hidden md:table-cell', sort: 'time_created'},
+        {title: 'TTL', class: 'w-32', sort: 'ttl'},
+    ],
+    classes: {
+        4: 'hidden md:table-cell',
+    },
+}) }}

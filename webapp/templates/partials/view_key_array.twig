@@ -1,0 +1,91 @@
+{% import 'components/macros.twig' as macros %}
+<div class="flex flex-wrap gap-3 justify-between items-center mb-4">
+    {% if total_items > 1 or subsearch_value is not empty %}
+        <div class="flex" id="subsearch_form" data-url="{{ view_url }}">
+            <input type="text" id="subsearch_key" value="{{ subsearch_value }}" placeholder="Search..." aria-label="Search..."
+                   class="py-1.5 px-3 w-full text-sm bg-white rounded-l border border-gray-300 md:w-72
+                   focus:outline-hidden focus:ring-3 focus:ring-primary-200 focus:border-primary-300
+                   dark:placeholder-gray-400 dark:text-white dark:bg-gray-800 dark:border-gray-600 dark:focus:ring-primary-500 dark:focus:border-primary-400">
+            {{ include('components/button.twig', {
+                text: '',
+                icon: 'search',
+                id: 'submit_subsearch',
+                class: 'rounded-l-none',
+                attributes: {'aria-label': 'Search'},
+            }) }}
+        </div>
+    {% else %}
+        <span></span>
+    {% endif %}
+
+    <div class="flex flex-wrap gap-3 items-center">
+        {% if not readonly %}
+            {{ include('components/button.twig', {
+                text: 'Add another value',
+                icon: 'plus',
+                link: add_subkey_url,
+                color: 'green',
+            }) }}
+        {% endif %}
+
+        {{ macros.value_modes(value_mode) }}
+    </div>
+</div>
+
+{% for item in value %}
+    <div class="mb-4 card">
+        <div class="flex overflow-y-auto justify-between py-1.5 px-4 border-b border-gray-200 dark:border-gray-700">
+            <span class="dark:text-gray-300">
+                {% if type not in types.extra.hide_title %}
+                    {{ types[type].title }} {{ macros.badge(item.sub_key, 'indigo') }}
+                {% endif %}
+
+                {% if item.encode_fn %}
+                    <span>Encoded with {{ macros.badge(item.encode_fn, 'blue', 'uppercase') }}</span>
+                    {% set item_encode_url = '&encoder=' ~ item.encode_fn %}
+                {% endif %}
+
+                {% if item.formatted == true %}
+                    {{ macros.badge('Formatted', 'blue', 'uppercase') }}
+                {% endif %}
+
+                {% if item.size %}
+                    <span>Size {{ macros.badge(item.size|bytes, 'sky') }}</span>
+                {% endif %}
+
+                {% if item.ttl %}
+                    <span>TTL {{ macros.badge(item.ttl|seconds, 'orange') }}</span>
+                {% endif %}
+            </span>
+
+            {% if not readonly %}
+                <div>
+                    <a href="{{ edit_url }}&{{ types[type].param }}={{ item.key ~ item_encode_url }}" class="inline-flex gap-1 items-center mr-3 font-semibold text-gray-600 dark:text-gray-300 hover:text-gray-700 dark:hover:text-gray-300">
+                        {{ svg('edit', 16) }} Edit
+                    </a>
+
+                    <form method="post" action="{{ view_url|default('') }}" class="inline">
+                        <input type="hidden" name="csrf_token" value="{{ csrf }}">
+                        <input type="hidden" name="{{ types[type].param }}" value="{{ item.key }}">
+                        <button type="submit" name="deletesub" class="inline-flex gap-1 items-center font-semibold text-red-500 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300"
+                                data-confirm="Are you sure you want to remove this item?">
+                            {{ svg('trash', 16) }} Delete
+                        </button>
+                    </form>
+                </div>
+            {% endif %}
+        </div>
+
+        <div class="overflow-y-auto p-4 dark:text-gray-300">
+            {{ item.value|raw }}
+        </div>
+    </div>
+{% endfor %}
+
+{% if value is empty %}
+    <div class="mb-4 p-4 text-center card dark:text-gray-400">
+        {{ subsearch_value is not empty ? 'No items match your search.' : 'No items.' }}
+    </div>
+{% endif %}
+
+{{ paginator|raw }}
