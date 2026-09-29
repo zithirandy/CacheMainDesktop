@@ -15,3 +15,4 @@ webapp/tmp/*
 # Misc
 *.log
 .DS_Store
+scripts/php-releases.json
