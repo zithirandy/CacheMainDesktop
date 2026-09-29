@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline'">
+    <title>Connections</title>
+    <link rel="stylesheet" href="connections.css">
+</head>
+<body>
+<div class="app">
+    <header class="app-header">
+        <h1>Connections</h1>
+        <button type="button" id="add" class="btn primary" title="Add a new connection">
+            <svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"><path d="M8 3v10M3 8h10" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+            New
+        </button>
+    </header>
+
+    <main class="body">
+        <div id="list" class="list"></div>
+
+        <div id="empty" class="empty hidden">
+            <p>No connections yet.</p>
+            <p class="hint">Create one to start monitoring your Redis or Memcached server.</p>
+        </div>
+
+        <form id="editor" class="editor hidden" novalidate>
+            <h2 id="editor-title">New connection</h2>
+
+            <div class="grid">
+                <label class="field span-2">
+                    <span>Name</span>
+                    <input type="text" id="f-name" placeholder="Production" autocomplete="off">
+                </label>
+
+                <label class="field">
+                    <span>Type</span>
+                    <select id="f-type">
+                        <option value="redis">Redis</option>
+                        <option value="memcached">Memcached</option>
+                    </select>
+                </label>
+
+                <label class="field">
+                    <span>Port</span>
+                    <input type="number" id="f-port" min="1" max="65535">
+                </label>
+
+                <label class="field span-2">
+                    <span>Host</span>
+                    <input type="text" id="f-host" placeholder="127.0.0.1" autocomplete="off">
+                </label>
+
+                <label class="field redis-only">
+                    <span>Username <em>(ACL, optional)</em></span>
+                    <input type="text" id="f-username" autocomplete="off">
+                </label>
+
+                <label class="field redis-only">
+                    <span>Database</span>
+                    <input type="number" id="f-database" min="0" value="0">
+                </label>
+
+                <label class="field span-2">
+                    <span>Password <em>(optional)</em></span>
+                    <input type="password" id="f-password" autocomplete="new-password">
+                </label>
+
+                <label class="field span-2">
+                    <span>Advanced <em>(JSON: sentinels, nodes, ssl, path, scheme, separator, databases, authfile)</em></span>
+                    <textarea id="f-advanced" rows="4" spellcheck="false"
+                              placeholder='{ "sentinels": ["127.0.0.1:26379"], "sentinelmaster": "mymaster" }'></textarea>
+                    <small class="field-error" id="advanced-error"></small>
+                </label>
+            </div>
+
+            <div class="editor-actions">
+                <button type="button" id="editor-cancel" class="btn">Cancel</button>
+                <button type="submit" id="editor-apply" class="btn primary">Apply</button>
+            </div>
+        </form>
+    </main>
+
+    <footer class="app-footer">
+        <span id="status" class="status" role="status"></span>
+        <button type="button" id="save" class="btn primary wide">Save &amp; Apply</button>
+    </footer>
+</div>
+<script src="connections.js"></script>
+</body>
+</html>

@@ -13,9 +13,11 @@
     "test": "node --test \"test/*.test.mjs\"",
     "smoke": "node scripts/smoke.mjs",
     "start": "electron .",
+    "predist": "node scripts/fetch-php.mjs && npm run build:css",
     "dist": "electron-builder --win zip"
   },
   "devDependencies": {
+    "@tailwindcss/cli": "^4.3.3",
     "electron": "latest",
     "electron-builder": "latest"
   }

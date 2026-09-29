@@ -1,0 +1,78 @@
+# CacheMainDesktop
+
+A Windows desktop app for managing Redis and Memcached servers, wrapping
+[phpCacheAdmin](https://github.com/RobiNN1/phpCacheAdmin) (v2.7.2, MIT) in an
+Electron shell with a restyled sidebar UI.
+
+```
+Electron window ── http://127.0.0.1:<random port> ──> php/php.exe -S (bundled portable PHP 8.5 NTS)
+                                                        └─ webapp/ (phpCacheAdmin fork, predis.phar)
+```
+
+- **Zero install for users**: ships its own PHP runtime; unzip and run.
+- **Connections are managed in the app** (sidebar → Connections) and injected
+  into the backend via `PCA_*` environment variables — the PHP core is
+  essentially untouched.
+- No login screen (the backend binds to `127.0.0.1` only, on a random port).
+- Light/dark/system theme, single instance, remembers window geometry.
+
+## Development
+
+Requirements: Node.js, Windows.
+
+```bash
+npm install          # electron, electron-builder, tailwind CLI
+npm run fetch-php    # download the portable PHP runtime (php/), sha256-checked
+npm run build:css    # (re)build webapp/assets/css/styles.css from src.css
+npm start            # launch the app
+```
+
+After editing Twig templates, clear the Twig cache (it is only auto-reloaded
+in debug mode) **and** rebuild the CSS (new utility classes are generated
+from the templates):
+
+```bash
+rm -rf webapp/tmp/twig && npm run build:css
+```
+
+### Tests
+
+```bash
+npm test             # unit tests (connections <-> env mapping, window state)
+npm run smoke        # boots the real PHP backend headlessly and checks pages
+```
+
+### Package
+
+```bash
+npm run dist         # predist fetches PHP + builds CSS, then electron-builder
+```
+
+Output: `dist/CacheMainDesktop <version>.zip` — a portable folder with the
+exe, `resources/php/` and `resources/webapp/`.
+
+## Layout
+
+| Path | Purpose |
+|---|---|
+| `main.mjs` | Electron main process: window, backend lifecycle, IPC |
+| `preload.cjs` | Context-isolated bridge (`window.pcaDesktop`) |
+| `lib/backend.js` | Spawn/ready/kill/restart of `php.exe -S` |
+| `lib/connections.js` | connections.json ↔ `PCA_*` env mapping |
+| `ui/` | Connection manager window (plain HTML/CSS/JS) |
+| `webapp/` | phpCacheAdmin fork: sidebar `layout.twig`, desktop `src.css` layer, slim `config.php` |
+| `scripts/` | fetch-php, icon generation, smoke/check helpers |
+| `php/` | Bundled portable PHP (gitignored, downloaded on demand) |
+
+## Notes
+
+- The OPCache/APCu/Realpath dashboards are disabled in `webapp/config.php`:
+  they introspect the PHP runtime they run inside (here: the bundled backend
+  process), which says nothing about your production servers.
+- Advanced connection options (`sentinels`, `nodes`, `ssl`, `path`, ...) are
+  passed as JSON values; keys must not contain underscores (upstream
+  `Config::envVarToArray` limitation).
+- Changing connections restarts the PHP backend (takes ~a second); metrics
+  and temp files live under `%APPDATA%/CacheMainDesktop`.
+- The webapp keeps the upstream MIT license and attribution — see
+  `webapp/LICENSE`.

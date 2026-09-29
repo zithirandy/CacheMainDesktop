@@ -1,0 +1,28 @@
+appId: com.zithirandy.cachemaindesktop
+productName: CacheMainDesktop
+copyright: MIT - webapp based on phpCacheAdmin by Róbert Kelčák
+
+directories:
+  output: dist
+  buildResources: build
+
+# Only the Electron code goes into asar; spawnable assets stay on disk.
+files:
+  - main.mjs
+  - preload.cjs
+  - lib/**
+  - ui/**
+  - package.json
+
+extraResources:
+  - from: webapp
+    to: webapp
+    filter:
+      - '**/*'
+      - '!tmp/**'
+  - from: php
+    to: php
+
+win:
+  target: zip
+  icon: build/icon.png
