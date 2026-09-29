@@ -82,6 +82,10 @@ function renderList() {
         row.querySelector('[data-action="edit"]').addEventListener('click', () => openEditor(index));
         row.querySelector('[data-action="delete"]').addEventListener('click', () => {
             if (window.confirm(`Delete connection "${conn.name || endpoint}"?`)) {
+                // An open editor holds an index into this list; dropping a
+                // row shifts indices, so close it instead of corrupting
+                // another entry on the next Apply.
+                closeEditor();
                 connections.splice(index, 1);
                 renderList();
                 setStatus('Not saved yet - press Save & Apply.');
@@ -115,7 +119,9 @@ function openEditor(index) {
     fields.type.value = conn.type ?? 'redis';
     fields.host.value = conn.host ?? '';
     fields.port.value = conn.port ?? DEFAULT_PORT[conn.type] ?? 6379;
-    fields.port.dataset.touched = '';
+    // Editing an existing entry: keep its port, do not let syncTypeFields()
+    // overwrite it with the type default. New entries keep following the type.
+    fields.port.dataset.touched = index >= 0 ? 'yes' : '';
     fields.username.value = conn.username ?? '';
     fields.password.value = conn.password ?? '';
     fields.database.value = conn.database ?? 0;
@@ -167,9 +173,10 @@ function applyEditor(event) {
         conn.username = fields.username.value.trim();
     }
 
-    if (fields.password.value !== '') {
-        conn.password = fields.password.value;
-    }
+    // Always assign: the field is prefilled with the stored password, so an
+    // emptied field means "remove the credentials". Empty values are dropped
+    // again by normalizeConnection on save.
+    conn.password = fields.password.value;
 
     if (advanced) {
         conn.advanced = advanced;

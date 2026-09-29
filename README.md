@@ -76,3 +76,20 @@ exe, `resources/php/` and `resources/webapp/`.
   and temp files live under `%APPDATA%/CacheMainDesktop`.
 - The webapp keeps the upstream MIT license and attribution — see
   `webapp/LICENSE`.
+
+## Security model
+
+- The backend binds to `127.0.0.1` on a random port, refuses foreign
+  `Origin`/`Host` headers (DNS-rebinding guard, `webapp/index.php`), and the
+  Electron window never navigates away from it. Other local processes can
+  still reach the port if they discover it - the same trust boundary as any
+  other local dev tool.
+- **Connection passwords are stored in plaintext** in
+  `%APPDATA%/CacheMainDesktop/connections.json` (like most comparable tools;
+  not DPAPI-encrypted). Treat the file like any other credentials file.
+- The PHP runtime is pinned to an exact version; `fetch-php` fails the build
+  when the pinned patch is no longer the newest of its series, so runtime
+  changes are always a deliberate `PINNED_VERSION` bump.
+- A crashed run can leave a php.exe behind only when the main process itself
+  dies abnormally; the next start sweeps it via the recorded pid
+  (`runtime.json`, image-name checked before kill).

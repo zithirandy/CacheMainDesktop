@@ -13,6 +13,30 @@ ini_set('display_errors', 'Off');
 ini_set('display_startup_errors', 'Off');
 error_reporting(E_ALL);
 
+/**
+ * Desktop shell guard: the backend answers on 127.0.0.1 only, but a page on
+ * another origin (classic DNS-rebinding: attacker domain resolves to
+ * 127.0.0.1) is still "same-origin" to the browser and could read the AJAX
+ * endpoints. Browsers attach an Origin header to such cross-origin fetches,
+ * and the shell never sends one, so anything with a foreign Origin - or a
+ * Host header that is not this exact loopback endpoint - is refused.
+ */
+(function (): void {
+    $origin = $_SERVER['HTTP_ORIGIN'] ?? '';
+
+    if ($origin !== '' && !str_starts_with($origin, 'http://127.0.0.1:') && !str_starts_with($origin, 'http://localhost:')) {
+        http_response_code(403);
+        exit('Forbidden.');
+    }
+
+    $host = strtolower((string) ($_SERVER['HTTP_HOST'] ?? ''));
+
+    if (!preg_match('~^127\.0\.0\.1:\d+$~', $host) && !preg_match('~^localhost:\d+$~', $host)) {
+        http_response_code(403);
+        exit('Forbidden.');
+    }
+})();
+
 if (getenv('PCA_PHP_MEMORY_LIMIT')) {
     ini_set('memory_limit', getenv('PCA_PHP_MEMORY_LIMIT'));
 }

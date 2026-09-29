@@ -7,6 +7,7 @@
  */
 
 import {randomBytes} from 'node:crypto';
+import {execFileSync} from 'node:child_process';
 import {readFileSync, writeFileSync} from 'node:fs';
 import {mkdir, readFile, writeFile} from 'node:fs/promises';
 import path from 'node:path';
@@ -29,6 +30,7 @@ const DATA_DIR = path.join(app.getPath('userData'), 'data');
 const CONNECTIONS_FILE = path.join(app.getPath('userData'), 'connections.json');
 const WINDOW_STATE_FILE = path.join(app.getPath('userData'), 'window-state.json');
 const SETTINGS_FILE = path.join(app.getPath('userData'), 'settings.json');
+const RUNTIME_FILE = path.join(app.getPath('userData'), 'runtime.json');
 
 /** @type {PhpBackend|null} */
 let backend = null;
@@ -41,7 +43,98 @@ let connectionsWindow = null;
 
 let quiting = false;
 
+/** Crash-restart budget for the supervised backend. */
+let backendRestarts = 0;
+
 const log = line => console.log(`[main] ${line}`);
+
+/**
+ * Kill a php.exe left behind by a previous crashed run, so orphans cannot
+ * accumulate. The image-name filter guards against a reused PID killing an
+ * unrelated process.
+ */
+function sweepStaleBackend() {
+    try {
+        const runtime = JSON.parse(readFileSync(RUNTIME_FILE, 'utf8'));
+        const pid = Number(runtime?.pid ?? 0);
+
+        if (!Number.isInteger(pid) || pid <= 0) {
+            return;
+        }
+
+        const listing = execFileSync(
+            `${process.env.SystemRoot ?? 'C:\\Windows'}\\System32\\tasklist.exe`,
+            ['/FI', `PID eq ${pid}`, '/FI', 'IMAGENAME eq php.exe', '/FO', 'CSV', '/NH'],
+            {encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore']},
+        ).toString();
+
+        if (listing.includes('php.exe')) {
+            execFileSync(
+                `${process.env.SystemRoot ?? 'C:\\Windows'}\\System32\\taskkill.exe`,
+                ['/PID', String(pid), '/T', '/F'],
+                {stdio: 'ignore'},
+            );
+            log(`swept stale php.exe (pid ${pid})`);
+        }
+    } catch {
+        // No runtime file or nothing to kill.
+    }
+}
+
+function rememberBackendPid() {
+    if (!backend) {
+        return;
+    }
+
+    try {
+        writeFileSync(RUNTIME_FILE, JSON.stringify({pid: backend.pid, port: backend.port}), 'utf8');
+    } catch {
+        // Best effort bookkeeping.
+    }
+}
+
+/**
+ * The ipc handlers expose stored credentials, so they are only served to the
+ * pages this shell itself loaded: the webapp origin or the packaged ui file.
+ */
+function isTrustedSender(event) {
+    const url = event.senderFrame?.url ?? '';
+    const local = backend ? `http://127.0.0.1:${backend.port}/` : 'http://127.0.0.1:1/';
+
+    return url.startsWith(local) || url.startsWith('file://');
+}
+
+/**
+ * Crash-loop protection: restart a backend that died mid-session (crash,
+ * OOM, user killing it in Task Manager) and put the window back on the new
+ * port. Gives up after three consecutive attempts.
+ */
+async function superviseRestart() {
+    if (quiting) {
+        return;
+    }
+
+    if (backendRestarts >= 3) {
+        log('backend died and the restart budget is exhausted, giving up.');
+        dialog.showErrorBox('CacheMainDesktop', 'The PHP backend keeps stopping. Please restart the application.');
+        return;
+    }
+
+    backendRestarts++;
+
+    try {
+        const url = await backend.start();
+        rememberBackendPid();
+        log(`backend restarted automatically (${url})`);
+
+        if (mainWindow && !mainWindow.isDestroyed()) {
+            mainWindow.loadURL(url);
+        }
+    } catch (error) {
+        log(`automatic restart failed: ${error.message}`);
+        await superviseRestart();
+    }
+}
 
 async function loadSettings() {
     try {
@@ -113,6 +206,18 @@ function createMainWindow(url) {
         }
 
         return {action: 'deny'};
+    });
+
+    // Never let the main frame navigate away from the webapp: any other
+    // document would still receive the preload bridge.
+    mainWindow.webContents.on('will-navigate', (event, target) => {
+        if (!target.startsWith(backend ? `http://127.0.0.1:${backend.port}/` : 'http://127.0.0.1:1/')) {
+            event.preventDefault();
+
+            if (/^https?:\/\//.test(target)) {
+                shell.openExternal(target);
+            }
+        }
     });
 
     mainWindow.webContents.on('before-input-event', (event, input) => {
@@ -188,23 +293,45 @@ async function restartBackend(metricsHash) {
             docroot: WEBAPP,
             env: backendEnv(connections, metricsHash),
             logger: line => log(`php ${line}`),
+            onUnexpectedExit: () => {
+                superviseRestart().catch(error => log(`supervisor failed: ${error.message}`));
+            },
         });
 
-        return backend.start();
+        const url = await backend.start();
+        rememberBackendPid();
+        return url;
     }
 
-    return backend.restart(backendEnv(connections, metricsHash));
+    const url = await backend.restart(backendEnv(connections, metricsHash));
+    backendRestarts = 0; // A manual restart resets the crash budget.
+    rememberBackendPid();
+    return url;
 }
 
 function registerIpc(metricsHash) {
-    ipcMain.handle('app:open-connections', () => {
+    ipcMain.handle('app:open-connections', event => {
+        if (!isTrustedSender(event)) {
+            return false;
+        }
+
         createConnectionsWindow();
         return true;
     });
 
-    ipcMain.handle('connections:list', () => loadConnections(CONNECTIONS_FILE));
+    ipcMain.handle('connections:list', event => {
+        if (!isTrustedSender(event)) {
+            return [];
+        }
+
+        return loadConnections(CONNECTIONS_FILE);
+    });
 
     ipcMain.handle('connections:save', async (event, list) => {
+        if (!isTrustedSender(event)) {
+            return {ok: false, errors: ['Untrusted sender.']};
+        }
+
         if (!Array.isArray(list)) {
             return {ok: false, errors: ['The connection list is invalid.']};
         }
@@ -224,14 +351,30 @@ function registerIpc(metricsHash) {
         const connections = list.map(normalizeConnection);
         await saveConnections(CONNECTIONS_FILE, connections);
 
-        // A changed list means a changed environment for PHP.
-        await restartBackend(metricsHash);
+        // A changed list means a changed environment for PHP. If the restart
+        // fails the list is still saved - report honestly and try one plain
+        // start so the window is never left pointing at a dead port.
+        let warning = '';
+
+        try {
+            await restartBackend(metricsHash);
+        } catch (error) {
+            log(`restart after save failed: ${error.message}`);
+
+            try {
+                const url = await backend.start();
+                rememberBackendPid();
+                warning = `Connections saved, but the backend restart failed (${error.message}). Retried on ${url}.`;
+            } catch {
+                return {ok: false, errors: [`Connections saved, but the backend could not be started: ${error.message}`]};
+            }
+        }
 
         if (mainWindow && !mainWindow.isDestroyed() && backend) {
             mainWindow.loadURL(backend.url);
         }
 
-        return {ok: true, errors: []};
+        return {ok: true, errors: [], warning};
     });
 }
 
@@ -251,6 +394,8 @@ if (!gotLock) {
     });
 
     app.whenReady().then(async () => {
+        sweepStaleBackend();
+
         await mkdir(path.join(DATA_DIR, 'metrics'), {recursive: true});
         await mkdir(path.join(DATA_DIR, 'twig'), {recursive: true});
 
@@ -268,6 +413,11 @@ if (!gotLock) {
             );
             app.quit();
         }
+    }).catch(error => {
+        // Anything outside the try above (settings write, data dirs, ...)
+        // must still surface and exit instead of leaving a headless process.
+        dialog.showErrorBox('CacheMainDesktop', `Startup failed.\n\n${error.message}`);
+        app.quit();
     });
 
     app.on('window-all-closed', () => {

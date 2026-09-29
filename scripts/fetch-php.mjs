@@ -68,8 +68,13 @@ async function main() {
         fail(`series ${series} not found in releases.json`);
     }
 
-    if (entry.version !== version) {
-        console.log(`fetch-php: note: latest in series ${series} is ${entry.version}, using it.`);
+    // Strict pin: releases.json only carries the newest patch of a series, so
+    // a mismatch means the pinned build would silently be replaced by a
+    // different patch version. Fail the build instead - bump PINNED_VERSION
+    // deliberately, or pass --allow-drift to accept the current one.
+    if (entry.version !== version && !process.argv.includes('--allow-drift')) {
+        fail(`PHP ${version} is no longer the latest of the ${series} series (now ${entry.version}). ` +
+            `Update PINNED_VERSION in this script for a deliberate upgrade, or re-run with --allow-drift.`);
     }
 
     const buildKey = Object.keys(entry).find(key => key.startsWith('nts-') && key.endsWith('x64'));

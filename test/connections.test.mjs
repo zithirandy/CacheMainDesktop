@@ -43,6 +43,18 @@ describe('validateConnection', () => {
         const result = validateConnection({type: 'redis', host: 'a', advanced: 'oops'});
         assert.equal(result.ok, false);
     });
+
+    it('rejects null and non-object entries without throwing', () => {
+        assert.equal(validateConnection(null).ok, false);
+        assert.equal(validateConnection(undefined).ok, false);
+        assert.equal(validateConnection('redis').ok, false);
+    });
+
+    it('rejects advanced keys that duplicate dedicated form fields', () => {
+        const result = validateConnection({type: 'redis', host: 'a', advanced: {host: 'other'}});
+        assert.equal(result.ok, false);
+        assert.ok(result.errors.some(e => e.includes('"host"')));
+    });
 });
 
 describe('normalizeConnection', () => {
@@ -116,6 +128,36 @@ describe('toEnvVars', () => {
         assert.deepEqual(toEnvVars([]), {});
     });
 
+    it('skips null entries instead of throwing', () => {
+        const env = toEnvVars([null, {id: 'a', type: 'redis', name: 'ok', host: 'h', port: 6379, database: 0}]);
+        assert.equal(env.PCA_REDIS_0_NAME, 'ok');
+    });
+
+    it('lets dedicated fields win over colliding advanced keys', () => {
+        const env = toEnvVars([{
+            id: 'a', type: 'redis', name: 'form', host: 'form-host', port: 6380, database: 0,
+            advanced: {host: 'advanced-host', port: 7000},
+        }]);
+
+        assert.equal(env.PCA_REDIS_0_HOST, 'form-host');
+        assert.equal(env.PCA_REDIS_0_PORT, '6380');
+    });
+
+    it('wraps scalar strings that would decode as JSON non-strings', () => {
+        const env = toEnvVars([{
+            id: 'a', type: 'redis', name: 'null', host: 'h', port: 6379, database: 0, password: '123456',
+        }]);
+
+        // PHP json_decode('"null"') -> the string "null", not null.
+        assert.equal(env.PCA_REDIS_0_NAME, '"null"');
+        assert.equal(env.PCA_REDIS_0_PASSWORD, '"123456"');
+    });
+
+    it('keeps ordinary strings unwrapped', () => {
+        const env = toEnvVars([{id: 'a', type: 'redis', name: 'prod', host: '127.0.0.1', port: 6379, database: 0}]);
+        assert.equal(env.PCA_REDIS_0_HOST, '127.0.0.1');
+    });
+
     it('ignores connections of an unknown type', () => {
         const env = toEnvVars([{id: 'a', type: 'bogus', name: 'x', host: 'h', port: 1, database: 0}]);
         assert.deepEqual(env, {});
@@ -142,5 +184,14 @@ describe('load/save round-trip', () => {
         const corrupt = `${dir}/corrupt.json`;
         await import('node:fs/promises').then(fs => fs.writeFile(corrupt, '{not json'));
         assert.deepEqual(await loadConnections(corrupt), []);
+    });
+
+    it('drops null entries when loading', async () => {
+        const dir = await import('node:fs/promises').then(fs => fs.mkdtemp(`${process.env.TEMP ?? '/tmp'}/pca-conn-`));
+        const file = `${dir}/with-null.json`;
+        await import('node:fs/promises').then(fs => fs.writeFile(file, '[null,{"id":"a","type":"redis","host":"h"}]'));
+        const list = await loadConnections(file);
+        assert.equal(list.length, 1);
+        assert.equal(list[0].id, 'a');
     });
 });
