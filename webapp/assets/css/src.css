@@ -273,11 +273,58 @@
     border-radius: 8px;
 }
 
-/* Keep the main tab bar reachable while scrolling long key lists. The bar
-   pulls itself full-bleed with -m-4; pinning it 16px above the scrollport
-   edge lands it flush at the top of the scroll container. */
-.pca-page > ul.flex:first-child {
+
+
+/* ---------------------------------- */
+/* Frozen header system                */
+/* ---------------------------------- */
+/* Offsets chain: main tabs bar (sticky at -1rem, ~49px tall incl. padding)
+   -> keys toolbar -> table head. Values verified against the real render;
+   adjust together. */
+#pca_tabs {
+    z-index: 40;
+}
+
+.keys-toolbar {
+    position: sticky;
+    top: 2.06rem; /* 49px tabs bar minus its -16px bleed */
+    z-index: 30;
+    background-color: var(--color-gray-50, #f9fafb);
+    border-bottom: 1px solid var(--color-gray-200, #e5e7eb);
+}
+
+.dark .keys-toolbar {
+    background-color: var(--color-gray-800, #1f2937);
+    border-bottom-color: var(--color-gray-700, #374151);
+}
+
+#keys_table thead th {
+    position: sticky;
+    top: calc(2.06rem + var(--pca-toolbar-h, 113px)); /* tabs bar + toolbar */
+    z-index: 20;
+    background-color: #fff;
+}
+
+.dark #keys_table thead th {
+    background-color: var(--color-gray-800, #1f2937);
+}
+
+/* Analysis tables: the upstream sticky thead pinned at top-0 would slide
+   under the tabs bar; align it below. */
+.pca-page thead.sticky {
+    top: 2.06rem;
+}
+
+/* Main tab bar: pinned at the top of the scrolling content column. */
+#pca_tabs {
     position: sticky;
     top: -1rem;
-    z-index: 30;
+    z-index: 40;
+}
+
+/* The tab bar is a scrollable flex child of the constrained .pca-page column;
+   scrollable items get an automatic min-height of 0 and would be crushed to
+   1px when the content overflows. Pin its flex size to its content. */
+#pca_tabs {
+    flex: none;
 }

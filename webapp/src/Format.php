@@ -118,6 +118,11 @@ class Format {
     }
 
     public static function timeDiff(int $from, ?int $to = null): string {
+        // epoch 0 / negative timestamps mean "never recorded", not "56 years ago".
+        if ($from <= 0) {
+            return 'Never';
+        }
+
         $units = [
             'year'   => 365 * 24 * 60 * 60,
             'month'  => 30 * 24 * 60 * 60,

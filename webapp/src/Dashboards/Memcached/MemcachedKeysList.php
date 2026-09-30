@@ -64,7 +64,8 @@ trait MemcachedKeysList {
                 'key'  => $key,
                 'info' => [
                     'link_title'           => $key,
-                    'bytes_size'           => $key_data['size'] ?? 0,
+                    // The text protocol does not report sizes on this code path - show n/a instead of a fake 0.00B.
+                    'bytes_size'           => ($key_data['size'] ?? 0) > 0 ? (int) $key_data['size'] : 'n/a',
                     'timediff_last_access' => $key_data['la'] ?? 0,
                     'ttl'                  => $ttl_display,
                 ],
@@ -101,7 +102,7 @@ trait MemcachedKeysList {
             $keys[] = [
                 'key'  => urldecode($key_data['key']),
                 'info' => [
-                    'bytes_size'           => $key_data['size'] ?? 0,
+                    'bytes_size'           => ($key_data['size'] ?? 0) > 0 ? (int) $key_data['size'] : 'n/a',
                     'timediff_last_access' => $key_data['la'] ?? 0,
                     'ttl'                  => $ttl === -1 ? 'Doesn\'t expire' : $ttl - $time,
                 ],

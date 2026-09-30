@@ -1,7 +1,7 @@
 {% import 'components/macros.twig' as macros %}
 {% set show_actions = (hide_actions is not defined or hide_actions == false) and not readonly %}
-<div class="overflow-hidden overflow-x-auto">
-    <table class="w-full text-left table-auto dark:text-gray-300">
+<div>
+    <table id="keys_table" class="w-full text-left table-auto tabular-nums dark:text-gray-300">
         <thead>
         <tr class="border-t border-b border-gray-200 dark:border-gray-700 text-primary-900 dark:text-primary-400">
             {% if show_actions %}
@@ -59,9 +59,15 @@
                         {% elseif item_key starts with 'timediff_' and item is not empty %}
                             <span title="{{ item|time }}">{{- item|timediff -}}</span>
                         {% elseif item_key == 'ttl' and item is not empty %}
-                            <span title="{{ is_numeric(item) ? item|seconds : item }}">{{- item -}}</span>
+                            {% if is_numeric(item) and item < 0 %}
+                                {{- macros.badge('Expired', 'red') -}}
+                            {% elseif is_numeric(item) %}
+                                <span title="{{ item }}s">{{- item|seconds -}}</span>
+                            {% else %}
+                                <span title="{{ item }}">{{- item -}}</span>
+                            {% endif %}
                         {% elseif item_key starts with 'bytes_' %}
-                            {{- item|bytes -}}
+                            {{- is_numeric(item) ? item|bytes : item -}}
                         {% else %}
                             {{- item -}}
                         {% endif %}

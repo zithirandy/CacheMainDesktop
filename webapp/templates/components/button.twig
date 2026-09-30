@@ -1,7 +1,8 @@
 {% set color_map = {
-    primary: 'bg-primary-500 hover:bg-primary-600 focus:ring-primary-200 disabled:bg-primary-300 dark:bg-primary-700 dark:hover:bg-primary-800 dark:focus:ring-primary-400 dark:disabled:bg-primary-400',
-    green: 'bg-green-500 hover:bg-green-600 focus:ring-green-200 disabled:bg-green-300 dark:bg-green-700 dark:hover:bg-green-800 dark:focus:ring-green-400 dark:disabled:bg-green-400',
-    red: 'bg-red-500 hover:bg-red-600 focus:ring-red-200 disabled:bg-red-300 dark:bg-red-700 dark:hover:bg-red-800 dark:focus:ring-red-400 dark:disabled:bg-red-400',
+    primary: 'bg-primary-600 hover:bg-primary-700 focus:ring-primary-200 disabled:bg-primary-300 dark:bg-primary-700 dark:hover:bg-primary-800 dark:focus:ring-primary-400 dark:disabled:bg-primary-400',
+    green: 'bg-green-700 hover:bg-green-800 focus:ring-green-200 disabled:bg-green-600 dark:bg-green-700 dark:hover:bg-green-800 dark:focus:ring-green-400 dark:disabled:bg-green-600',
+    red: 'bg-red-700 hover:bg-red-800 focus:ring-red-200 disabled:bg-red-600 dark:bg-red-800 dark:hover:bg-red-900 dark:focus:ring-red-400 dark:disabled:bg-red-700',
+    neutral: 'bg-gray-600 hover:bg-gray-700 focus:ring-gray-300 disabled:bg-gray-400 dark:bg-gray-500 dark:hover:bg-gray-600 dark:focus:ring-gray-400 dark:disabled:bg-gray-600',
 } %}
 {% set btn_color = color_map[color] ?? color_map.primary %}
 {% set classes = 'text-sm inline-flex items-center gap-1 border border-transparent rounded-sm py-1.5 px-3 font-semibold text-white align-middle whitespace-nowrap shadow-sm focus:ring-3 dark:text-white ' ~ btn_color %}

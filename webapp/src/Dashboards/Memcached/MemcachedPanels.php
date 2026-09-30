@@ -16,14 +16,14 @@ trait MemcachedPanels {
      */
     private function getPanelsData(bool $command_stats = false): array {
         try {
-            $title = '';
+            $client = '';
 
             if (class_exists(PHPMem::class)) {
-                $title = 'PHPMem v'.PHPMem::VERSION;
+                $client = 'PHPMem v'.PHPMem::VERSION;
 
                 $server = $this->servers[$this->current_server];
                 if (isset($server['extension']) && $server['extension'] === true && extension_loaded('memcached')) {
-                    $title .= ' + Memcached';
+                    $client .= ' + Memcached';
                 }
             }
 
@@ -31,10 +31,11 @@ trait MemcachedPanels {
 
             $stats = [
                 [
-                    'title' => $title,
+                    'title' => 'Server',
                     'data'  => [
-                        'Version' => $info['version'],
-                        'Uptime'  => Format::seconds($info['uptime'] ?? 0, false),
+                        'Server version' => $info['version'],
+                        'Client'         => $client,
+                        'Uptime'         => Format::seconds($info['uptime'] ?? 0, false),
                     ],
                 ],
                 $this->memoryPanel($info),
@@ -52,7 +53,8 @@ trait MemcachedPanels {
                 [
                     'title' => 'Connections',
                     'data'  => [
-                        'Current'  => Format::number($info['curr_connections'] ?? 0).' / '.Format::number($info['max_connections'] ?? 0).' max',
+                        // Older servers report max_connections as 0 - that is "no limit", not a broken counter.
+                        'Current'  => Format::number($info['curr_connections'] ?? 0).' / '.(($info['max_connections'] ?? 0) > 0 ? Format::number($info['max_connections']).' max' : 'no limit'),
                         'Total'    => Format::number($info['total_connections'] ?? 0),
                         'Rejected' => Format::number($info['rejected_connections'] ?? 0),
                     ],

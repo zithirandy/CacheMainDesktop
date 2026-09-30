@@ -313,7 +313,16 @@ function createConnectionsWindow() {
         connectionsWindow = null;
     });
 
-    connectionsWindow.loadFile(path.join(APP_DIR, 'ui', 'connections.html'));
+    // Match the main window's theme so the two windows never disagree.
+    let theme = 'system';
+
+    if (mainWindow && !mainWindow.isDestroyed()) {
+        theme = await mainWindow.webContents
+            .executeJavaScript("localStorage.getItem('theme') || 'system'")
+            .catch(() => 'system');
+    }
+
+    connectionsWindow.loadFile(path.join(APP_DIR, 'ui', 'connections.html'), {query: {theme: String(theme)}});
 }
 
 async function restartBackend(metricsHash) {

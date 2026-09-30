@@ -6,8 +6,25 @@
 {% else %}
     {% set item_class = 'cursor-pointer text-sm font-semibold inline-flex whitespace-nowrap py-3 px-4 border-b-2 border-transparent hover:text-gray-600 hover:border-gray-600 dark:hover:text-gray-300 dark:hover:border-gray-300 [&.active]:border-primary-500 [&.active]:text-primary-500' %}
 {% endif %}
-<ul class="flex overflow-x-auto mb-4{{ pills ? ' gap-3' : '' }}{{ class|space }}">
+{% set primary_tabs = ['keys', 'analysis', 'console'] %}
+
+{% set primary_links = {} %}
+{% set more_links = {} %}
+
+{% if main %}
     {% for link, title in links %}
+        {% if link in primary_tabs %}
+            {% set primary_links = primary_links|merge({(link): title}) %}
+        {% else %}
+            {% set more_links = more_links|merge({(link): title}) %}
+        {% endif %}
+    {% endfor %}
+{% else %}
+    {% set primary_links = links %}
+{% endif %}
+
+<ul{% if main %} id="pca_tabs"{% endif %} class="flex overflow-x-auto mb-4{{ pills ? ' gap-3' : '' }}{{ class|space }}">
+    {% for link, title in primary_links %}
         {% if tabs %}
             {% set is_active = selected is defined ? (selected == link) : (links|keys|first == link) %}
         {% else %}
@@ -21,6 +38,22 @@
             {% endif %}
         </li>
     {% endfor %}
+
+    {% if main and more_links|length > 0 %}
+        {% set active_in_more = get('tab', '') in more_links|keys %}
+        <li class="relative shrink-0">
+            <button type="button" class="tabs-more-toggle cursor-pointer text-sm font-semibold inline-flex gap-1 items-center py-3 px-4 border-b-2{{ active_in_more ? ' border-primary-500 text-primary-500' : ' border-transparent' }} hover:text-gray-600 hover:border-gray-600 dark:hover:text-gray-300 dark:hover:border-gray-300">
+                More {{ svg('down', 10) }}
+            </button>
+            <div class="tabs-more-menu absolute right-0 z-50 py-1 mt-1 hidden min-w-40 rounded-b-lg border border-gray-200 bg-white shadow-lg dark:border-gray-700 dark:bg-gray-800">
+                {% for link, title in more_links %}
+                    <a href="{{ link([], {tab: link}) }}"
+                       class="block px-4 py-2 text-sm whitespace-nowrap text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-700/50{{ get('tab', '') == link ? ' bg-gray-100 font-semibold dark:bg-gray-700/50' : '' }}">{{ title }}</a>
+                {% endfor %}
+            </div>
+        </li>
+    {% endif %}
+
     {% if toggle is defined %}
         <li class="flex shrink-0 items-center ms-auto">
             <button type="button" id="{{ toggle.id }}" role="switch" aria-checked="false"

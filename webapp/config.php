@@ -77,9 +77,10 @@ return [
         },
     ],
     // Customizations
-    'timeformat'   => 'd. m. Y H:i:s',
-    'decimalsep'   => ',',
-    'thousandssep' => ' ',
+    'timeformat'   => 'Y-m-d H:i:s',
+    // Chinese number conventions: dot decimals, comma thousands.
+    'decimalsep'   => '.',
+    'thousandssep' => ',',
     'listview'     => 'table',
     'keymodal'     => false, // Full-page key view - a modal is too cramped for editing.
     'sortthreshold' => 100_000,

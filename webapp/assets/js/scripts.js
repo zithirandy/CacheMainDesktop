@@ -1357,3 +1357,40 @@ document.addEventListener('DOMContentLoaded', () => {
         auth_setup();
     }
 });
+
+// CacheMainDesktop: frozen-header offsets. The keys toolbar wraps at narrower
+// widths, so its height is measured instead of assumed, and the table head
+// sticks below it via --pca-toolbar-h.
+(() => {
+    const sync = () => {
+        const page = document.querySelector('.pca-page');
+        const toolbar = document.querySelector('.keys-toolbar');
+
+        if (page && toolbar) {
+            page.style.setProperty('--pca-toolbar-h', `${toolbar.offsetHeight}px`);
+        }
+    };
+
+    sync();
+    window.addEventListener('resize', sync);
+})();
+
+
+// More-tabs dropdown: button toggles the menu, outside click closes it.
+document.addEventListener('click', (e) => {
+    const toggle = e.target.closest('.tabs-more-toggle');
+    const menu = document.querySelector('.tabs-more-menu');
+
+    if (!menu) {
+        return;
+    }
+
+    if (toggle) {
+        menu.classList.toggle('hidden');
+        return;
+    }
+
+    if (!menu.classList.contains('hidden') && !e.target.closest('.tabs-more-menu')) {
+        menu.classList.add('hidden');
+    }
+});
