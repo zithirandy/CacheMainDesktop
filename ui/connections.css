@@ -331,3 +331,7 @@ textarea {
 .status.error {
     color: var(--danger);
 }
+
+.status.warn {
+    color: #d97706;
+}

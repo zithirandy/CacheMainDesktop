@@ -296,7 +296,7 @@
 
 #keys_table thead th {
     position: sticky;
-    top: calc(2.06rem + var(--pca-toolbar-h, 113px)); /* tabs bar + toolbar */
+    top: calc(1.9375rem + var(--pca-toolbar-h, 113px)); /* tabs bar + toolbar */
     z-index: 20;
     background-color: #fff;
 }
@@ -308,7 +308,7 @@
 /* Analysis tables: the upstream sticky thead pinned at top-0 would slide
    under the tabs bar; align it below. */
 .pca-page thead.sticky {
-    top: 2.06rem;
+    top: 1.9375rem;
 }
 
 /* Main tab bar: pinned at the top of the scrolling content column. */

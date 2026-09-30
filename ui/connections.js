@@ -219,7 +219,7 @@ async function saveAll() {
             return;
         }
 
-        setStatus(result.warning || 'Saved. The dashboard has been reloaded.', 'ok');
+        setStatus(result.warning ?? 'Saved. The dashboard has been reloaded.', result.warning ? 'warn' : 'ok');
     } catch (error) {
         setStatus(`Save failed: ${error.message}`, 'error');
     } finally {

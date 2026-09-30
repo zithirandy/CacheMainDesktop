@@ -121,11 +121,15 @@ function isTrustedSender(event) {
  * Point the main window at the backend, keeping whatever the user was
  * looking at (dashboard, server, db, tab). Without this every backend
  * restart dumps them back on the first dashboard, which reads as
- * "my change did nothing". A preserved ?server=N index that no longer
- * exists after a connection-list edit is dropped rather than silently
- * pointing at a different server.
+ * "my change did nothing". A ?server=N index is positional: when the
+ * connection list of that type changed size (an entry added or removed
+ * above it) the index no longer names the same server, so it is dropped
+ * rather than silently pointing somewhere else.
+ *
+ * @param {Object<string, number>|null} countsBefore list sizes per type
+ *        before the change (null = the list did not change).
  */
-async function reloadMainWindow() {
+async function reloadMainWindow(countsBefore = null) {
     if (!mainWindow || mainWindow.isDestroyed() || !backend) {
         return;
     }
@@ -140,7 +144,8 @@ async function reloadMainWindow() {
             const connections = await loadConnections(CONNECTIONS_FILE);
             const count = connections.filter(conn => conn.type === dashboard).length;
 
-            if (Number(params.get('server')) >= count) {
+            if (Number(params.get('server')) >= count
+                || (countsBefore !== null && (countsBefore[dashboard] ?? count) !== count)) {
                 params.delete('server');
             }
         }
@@ -408,6 +413,9 @@ function registerIpc(metricsHash) {
             log(`connections save rejected: ${errors.join(' ')}`, 'warn');
             return {ok: false, errors};
         }
+
+        const previous = await loadConnections(CONNECTIONS_FILE);
+        const countsBefore = Object.fromEntries(['redis', 'memcached'].map(type => [type, previous.filter(conn => conn.type === type).length]));
 
         const connections = list.map(normalizeConnection);
         await saveConnections(CONNECTIONS_FILE, connections);

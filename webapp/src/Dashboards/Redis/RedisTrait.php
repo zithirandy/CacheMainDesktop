@@ -171,9 +171,12 @@ trait RedisTrait {
         $paginated_keys = $paginator->getPaginated();
 
         // With scansize active the listing is a SCAN-order sample; say so
-        // instead of letting it read as the whole keyspace.
+        // instead of letting it read as the whole keyspace. Only for the
+        // unfiltered listing - a search result is exact, never "capped".
         $all_keys = $this->redis->databaseSize();
-        $keys_truncated = Config::get('redisoptions.scansize') !== null && count($keys) < (int) $all_keys;
+        $keys_truncated = Http::get('s', '') === ''
+            && Config::get('redisoptions.scansize') !== null
+            && count($keys) < (int) $all_keys;
 
         if (Http::get('view', Config::get('listview', 'table')) === 'tree') {
             $keys_to_display = $this->keysTreeView($paginated_keys);

@@ -1968,7 +1968,7 @@
 }
 #keys_table thead th {
   position: sticky;
-  top: calc(2.06rem + var(--pca-toolbar-h, 113px));
+  top: calc(1.9375rem + var(--pca-toolbar-h, 113px));
   z-index: 20;
   background-color: #fff;
 }
@@ -1976,7 +1976,7 @@
   background-color: var(--color-gray-800, #1f2937);
 }
 .pca-page thead.sticky {
-  top: 2.06rem;
+  top: 1.9375rem;
 }
 #pca_tabs {
   position: sticky;

@@ -1373,6 +1373,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
     sync();
     window.addEventListener('resize', sync);
+
+    if (typeof ResizeObserver !== 'undefined') {
+        const page = document.querySelector('.pca-page');
+        const toolbar = document.querySelector('.keys-toolbar');
+
+        if (page && toolbar) {
+            new ResizeObserver(sync).observe(toolbar);
+        }
+    }
 })();
 
 
