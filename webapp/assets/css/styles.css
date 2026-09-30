@@ -1948,7 +1948,7 @@
 }
 .keys-toolbar {
   position: sticky;
-  top: 2.06rem;
+  top: 1.9375rem;
   z-index: 30;
   background-color: var(--color-gray-50, #f9fafb);
   border-bottom: 1px solid var(--color-gray-200, #e5e7eb);
