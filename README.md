@@ -93,3 +93,15 @@ exe, `resources/php/` and `resources/webapp/`.
 - A crashed run can leave a php.exe behind only when the main process itself
   dies abnormally; the next start sweeps it via the recorded pid
   (`runtime.json`, image-name checked before kill).
+
+## Running the check scripts against real servers
+
+The browser-driven checks (`scripts/check-*.mjs`) accept LAN targets through
+environment variables - no credentials live in this repo:
+
+```bash
+export PCA_TEST_REDIS_HOST=...      # defaults to 127.0.0.1
+export PCA_TEST_REDIS_PASSWORD=...
+export PCA_TEST_MC_HOST=...         # defaults to 127.0.0.1
+export PCA_TEST_BROWSER=...         # chromium path override (auto-detected otherwise)
+```

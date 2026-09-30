@@ -1,7 +1,7 @@
 /**
  * Read-only reproduction against the real servers, from DLFifthApi sources:
  *  - Redis TEST_ENV.redisHost:6379 (db 0 vs db 5 tab bar)
- *  - Memcached 192.0.2.233:11211 (rendering only)
+ *  - Memcached TEST_ENV.mcHost:11211 (rendering only)
  *
  * Only INFO / SELECT / stats reads are issued - no key is ever touched.
  */

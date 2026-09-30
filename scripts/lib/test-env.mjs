@@ -14,10 +14,10 @@ import {readdirSync, existsSync} from 'node:fs';
 import path from 'node:path';
 
 export const TEST_ENV = {
-    redisHost: process.env.PCA_TEST_REDIS_HOST ?? '192.0.2.122',
+    redisHost: process.env.PCA_TEST_REDIS_HOST ?? '127.0.0.1',
     redisPassword: process.env.PCA_TEST_REDIS_PASSWORD ?? '',
     redisPort: process.env.PCA_TEST_REDIS_PORT ?? '6379',
-    mcHost: process.env.PCA_TEST_MC_HOST ?? '192.0.2.233',
+    mcHost: process.env.PCA_TEST_MC_HOST ?? '127.0.0.1',
     mcPort: process.env.PCA_TEST_MC_PORT ?? '11211',
 };
 

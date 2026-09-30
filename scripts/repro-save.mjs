@@ -88,7 +88,7 @@ async function main() {
     };
 
     // Scenario A: create a memcached connection exactly like a user would.
-    await fill('Mem 会话缓存', '192.0.2.233', 11211, 'memcached');
+    await fill('Mem 会话缓存', TEST_ENV.mcHost, 11211, 'memcached');
     await snapshot('A1 memcached form filled');
     await page.click('#editor-apply');
     await snapshot('A2 memcached applied');
@@ -109,7 +109,7 @@ async function main() {
 
     // Scenario C: edit again, only change host, apply, save.
     await page.click('.conn [data-action="edit"]');
-    await page.fill('#f-host', '192.0.2.219');
+    await page.fill('#f-host', '127.0.0.2');
     await page.click('#editor-apply');
     await page.click('#save');
     await page.waitForTimeout(300);
