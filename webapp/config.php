@@ -25,6 +25,10 @@ return [
         'pubsubrefresh' => 5,
         'pubsubwindow'  => 5,
         'scanthreshold' => 100_000,
+        // Always SCAN and cap the retrieved keys. The default KEY-based listing
+        // pulls and sorts every key of the database in one go, which freezes
+        // the UI on production servers with big keyspaces.
+        'scansize' => 1000,
     ],
     // The connection list comes from the desktop shell via PCA_REDIS_* / PCA_MEMCACHED_* env variables.
     'redis'     => [],
@@ -77,7 +81,7 @@ return [
     'decimalsep'   => ',',
     'thousandssep' => ' ',
     'listview'     => 'table',
-    'keymodal'     => true, // Desktop feel: open the key view in a modal.
+    'keymodal'     => false, // Full-page key view - a modal is too cramped for editing.
     'sortthreshold' => 100_000,
     'panelrefresh'  => 30,
     'metricsrefresh' => 60,

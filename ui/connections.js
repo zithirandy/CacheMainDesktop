@@ -138,8 +138,14 @@ function closeEditor() {
     els.editor.classList.add('hidden');
 }
 
+/**
+ * Read the form into the working list. Returns false (and shows the error)
+ * when the form is invalid, so callers can abort a save.
+ */
 function applyEditor(event) {
-    event.preventDefault();
+    if (event && typeof event.preventDefault === 'function') {
+        event.preventDefault();
+    }
 
     let advanced;
 
@@ -148,12 +154,12 @@ function applyEditor(event) {
             advanced = JSON.parse(fields.advanced.value);
         } catch {
             fields.advancedError.textContent = 'Invalid JSON.';
-            return;
+            return false;
         }
 
         if (typeof advanced !== 'object' || advanced === null || Array.isArray(advanced)) {
             fields.advancedError.textContent = 'Advanced options must be a JSON object.';
-            return;
+            return false;
         }
     }
 
@@ -191,9 +197,17 @@ function applyEditor(event) {
     closeEditor();
     renderList();
     setStatus('Not saved yet - press Save & Apply.');
+    return true;
 }
 
 async function saveAll() {
+    // If the editor is open, fold its contents into the list first - the
+    // user should not have to know about the Apply/Save two-step.
+    if (!els.editor.classList.contains('hidden') && !applyEditor()) {
+        setStatus('Fix the highlighted field first, then save.', 'error');
+        return;
+    }
+
     els.save.disabled = true;
     setStatus('Saving and restarting the backend...');
 
@@ -205,7 +219,7 @@ async function saveAll() {
             return;
         }
 
-        setStatus('Saved. The dashboard has been reloaded.', 'ok');
+        setStatus(result.warning || 'Saved. The dashboard has been reloaded.', 'ok');
     } catch (error) {
         setStatus(`Save failed: ${error.message}`, 'error');
     } finally {

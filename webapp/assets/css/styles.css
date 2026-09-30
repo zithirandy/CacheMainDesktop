@@ -383,9 +383,6 @@
   .w-56 {
     width: calc(0.25rem * 56);
   }
-  .w-60 {
-    width: calc(0.25rem * 60);
-  }
   .w-full {
     width: 100%;
   }
@@ -1277,6 +1274,9 @@
     .md\:w-1\/4 {
       width: calc(1 / 4 * 100%);
     }
+    .md\:w-64 {
+      width: calc(0.25rem * 64);
+    }
     .md\:w-72 {
       width: calc(0.25rem * 72);
     }
@@ -1856,6 +1856,11 @@
 }
 .pca-rail .select, .pca-sidebar .select {
   border-radius: 8px;
+}
+.pca-page > ul.flex:first-child {
+  position: sticky;
+  top: -1rem;
+  z-index: 30;
 }
 @property --tw-space-y-reverse {
   syntax: "*";

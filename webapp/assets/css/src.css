@@ -272,3 +272,12 @@
 .pca-sidebar .select {
     border-radius: 8px;
 }
+
+/* Keep the main tab bar reachable while scrolling long key lists. The bar
+   pulls itself full-bleed with -m-4; pinning it 16px above the scrollport
+   edge lands it flush at the top of the scroll container. */
+.pca-page > ul.flex:first-child {
+    position: sticky;
+    top: -1rem;
+    z-index: 30;
+}

@@ -29,13 +29,8 @@
             <h2 id="editor-title">New connection</h2>
 
             <div class="grid">
-                <label class="field span-2">
-                    <span>Name</span>
-                    <input type="text" id="f-name" placeholder="Production" autocomplete="off">
-                </label>
-
                 <label class="field">
-                    <span>Type</span>
+                    <span>Type <em>(check this first!)</em></span>
                     <select id="f-type">
                         <option value="redis">Redis</option>
                         <option value="memcached">Memcached</option>
@@ -45,6 +40,11 @@
                 <label class="field">
                     <span>Port</span>
                     <input type="number" id="f-port" min="1" max="65535">
+                </label>
+
+                <label class="field span-2">
+                    <span>Name</span>
+                    <input type="text" id="f-name" placeholder="Production" autocomplete="off">
                 </label>
 
                 <label class="field span-2">

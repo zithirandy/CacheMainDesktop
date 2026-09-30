@@ -19,7 +19,8 @@
   "devDependencies": {
     "@tailwindcss/cli": "^4.3.3",
     "electron": "latest",
-    "electron-builder": "latest"
+    "electron-builder": "latest",
+    "playwright-core": "^1.63.0"
   },
   "allowScripts": {
     "electron@44.4.5": true

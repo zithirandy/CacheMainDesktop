@@ -118,6 +118,28 @@ function isTrustedSender(event) {
 }
 
 /**
+ * Point the main window at the backend, keeping whatever the user was
+ * looking at (dashboard, server, db, tab). Without this every backend
+ * restart dumps them back on the first dashboard, which reads as
+ * "my change did nothing".
+ */
+function reloadMainWindow() {
+    if (!mainWindow || mainWindow.isDestroyed() || !backend) {
+        return;
+    }
+
+    let search = '';
+
+    try {
+        search = new URL(mainWindow.webContents.getURL()).search;
+    } catch {
+        // A non-URL (early startup) just reloads the root.
+    }
+
+    mainWindow.loadURL(backend.url + '/' + search);
+}
+
+/**
  * Crash-loop protection: restart a backend that died mid-session (crash,
  * OOM, user killing it in Task Manager) and put the window back on the new
  * port. Gives up after three consecutive attempts.
@@ -139,10 +161,7 @@ async function superviseRestart() {
         const url = await backend.start();
         rememberBackendPid();
         log(`backend restarted automatically (${url})`);
-
-        if (mainWindow && !mainWindow.isDestroyed()) {
-            mainWindow.loadURL(url);
-        }
+        reloadMainWindow();
     } catch (error) {
         log(`automatic restart failed: ${error.message}`);
         await superviseRestart();
@@ -390,9 +409,7 @@ function registerIpc(metricsHash) {
             }
         }
 
-        if (mainWindow && !mainWindow.isDestroyed() && backend) {
-            mainWindow.loadURL(backend.url);
-        }
+        reloadMainWindow();
 
         return {ok: true, errors: [], warning};
     });
