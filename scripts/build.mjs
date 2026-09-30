@@ -10,8 +10,9 @@ import {spawn} from 'node:child_process';
 
 process.env.ELECTRON_BUILDER_BINARIES_MIRROR ??= 'https://npmmirror.com/mirrors/electron-builder-binaries/';
 
-const child = spawn(process.platform === 'win32' ? 'npx.cmd' : 'npx',
-    ['electron-builder', ...process.argv.slice(2)],
-    {stdio: 'inherit', env: process.env});
+// Node >= 18.20 refuses to spawn .cmd/.bat directly (EINVAL); run npx
+// through the shell instead - the argument list here is fixed and simple.
+const child = spawn('npx', ['electron-builder', ...process.argv.slice(2)],
+    {stdio: 'inherit', env: process.env, shell: true});
 
 child.on('exit', code => process.exit(code ?? 1));
