@@ -170,6 +170,11 @@ trait RedisTrait {
         $paginator = new Paginator($keys);
         $paginated_keys = $paginator->getPaginated();
 
+        // With scansize active the listing is a SCAN-order sample; say so
+        // instead of letting it read as the whole keyspace.
+        $all_keys = $this->redis->databaseSize();
+        $keys_truncated = Config::get('redisoptions.scansize') !== null && count($keys) < (int) $all_keys;
+
         if (Http::get('view', Config::get('listview', 'table')) === 'tree') {
             $keys_to_display = $this->keysTreeView($paginated_keys);
         } else {
@@ -177,10 +182,11 @@ trait RedisTrait {
         }
 
         return [
-            'keys'      => $keys_to_display,
-            'all_keys'  => $this->redis->databaseSize(),
-            'paginator' => $paginator->render(),
-            'view_key'  => Http::queryString(['s'], ['view' => 'key', 'key' => '__key__']),
+            'keys'           => $keys_to_display,
+            'all_keys'       => $all_keys,
+            'keys_truncated' => $keys_truncated,
+            'paginator'      => $paginator->render(),
+            'view_key'       => Http::queryString(['s'], ['view' => 'key', 'key' => '__key__']),
         ];
     }
 

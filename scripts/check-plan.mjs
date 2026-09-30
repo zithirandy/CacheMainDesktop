@@ -61,6 +61,7 @@ const treeBody = await treeRes.text();
 check('memcached tree view renders (n/a sizes guarded)', treeRes.status === 200 && !treeBody.includes('Template error'), 'status ' + treeRes.status);
 
 const redisPage = await fetch(`${url}/?dashboard=redis`).then(r => r.text());
+check('no truncation notice when db fits under scansize', !redisPage.includes('capped by scansize'));
 check('redis: panel says Server version', redisPage.includes('Server version'));
 check('thousands separator is a comma (7,197-style)', /,\d{3}\b/.test(redisPage.replace(/PHPMem|Predis/g, '')) || redisPage.includes('7,197'));
 

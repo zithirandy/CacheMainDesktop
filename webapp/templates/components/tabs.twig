@@ -26,6 +26,9 @@
     {% if primary_links|length == 0 %}
         {% set primary_links = links %}
         {% set more_links = {} %}
+    {% elseif more_links|length == 1 %}
+        {% set primary_links = primary_links|merge(more_links) %}
+        {% set more_links = {} %}
     {% endif %}
 {% else %}
     {% set primary_links = links %}
