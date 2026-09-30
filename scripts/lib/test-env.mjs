@@ -10,7 +10,7 @@
  *   the ms-playwright cache, or Playwright's channel fallback.
  */
 
-import {readdirSync, existsSync} from 'node:fs';
+import {readdirSync, existsSync, mkdirSync} from 'node:fs';
 import path from 'node:path';
 
 export const TEST_ENV = {
@@ -20,6 +20,19 @@ export const TEST_ENV = {
     mcHost: process.env.PCA_TEST_MC_HOST ?? '127.0.0.1',
     mcPort: process.env.PCA_TEST_MC_PORT ?? '11211',
 };
+
+/**
+ * Where check scripts write debug screenshots - kept OUTSIDE this repo so
+ * real data never lands in git. Override with PCA_SHOTS_DIR.
+ */
+export const shotsDir = () => {
+    const dir = process.env.PCA_SHOTS_DIR ?? path.join(ROOT_PRIVATE, '调试记录', 'shots');
+    mkdirSync(dir, {recursive: true});
+
+    return dir;
+};
+
+const ROOT_PRIVATE = 'F:/原E盘/Jev&RSI/CacheMainDesktop-历史';
 
 export function hasTestCreds() {
     return TEST_ENV.redisPassword !== '';

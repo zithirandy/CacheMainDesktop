@@ -6,7 +6,7 @@ import path from 'node:path';
 import {fileURLToPath} from 'node:url';
 
 import {PhpBackend} from '../lib/backend.js';
-import {launchBrowser, TEST_ENV} from './lib/test-env.mjs';
+import {launchBrowser, TEST_ENV, shotsDir} from './lib/test-env.mjs';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 let stopping = false;
@@ -57,7 +57,7 @@ const measure = () => page.evaluate(() => {
 });
 
 console.log('at top   :', JSON.stringify(await measure()));
-await page.screenshot({path: 'docs/shots/sticky-top.png'});
+await page.screenshot({path: shotsDir() + '/sticky-top.png'});
 
 // Scroll the content container halfway down the key list.
 await page.evaluate(() => {
@@ -68,7 +68,7 @@ await page.waitForTimeout(200);
 
 const scrolled = await measure();
 console.log('scrolled :', JSON.stringify(scrolled), '| tabs still visible:', scrolled.tabsTop >= -20 && scrolled.tabsTop < 40);
-await page.screenshot({path: 'docs/shots/sticky-scrolled.png'});
+await page.screenshot({path: shotsDir() + '/sticky-scrolled.png'});
 
 await browser.close();
 stopping = true;

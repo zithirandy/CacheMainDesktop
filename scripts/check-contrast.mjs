@@ -8,7 +8,7 @@ import path from 'node:path';
 import {fileURLToPath} from 'node:url';
 
 import {PhpBackend} from '../lib/backend.js';
-import {launchBrowser, TEST_ENV} from './lib/test-env.mjs';
+import {launchBrowser, TEST_ENV, shotsDir} from './lib/test-env.mjs';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 
@@ -153,7 +153,7 @@ for (const theme of ['dark', 'light']) {
     // The page already initialized without the bridge; re-run its init effects by reloading with the bridge in place.
     await page2.reload();
     await page2.waitForTimeout(300);
-    await page2.screenshot({path: `docs/shots/connections-${theme}.png`});
+    await page2.screenshot({path: shotsDir() + `/connections-${theme}.png`});
     await page2.close();
 }
 

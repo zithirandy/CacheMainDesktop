@@ -9,7 +9,7 @@ import path from 'node:path';
 import {fileURLToPath} from 'node:url';
 
 import {PhpBackend} from '../lib/backend.js';
-import {launchBrowser, TEST_ENV} from './lib/test-env.mjs';
+import {launchBrowser, TEST_ENV, shotsDir} from './lib/test-env.mjs';
 import {toEnvVars} from '../lib/connections.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -135,7 +135,7 @@ check('tabs bar still at top', scrolled.tabs && scrolled.tabs.top >= -20 && scro
 check('toolbar still visible', scrolled.toolbar && scrolled.toolbar.top >= -4 && scrolled.toolbar.top < 120);
 check('table header still visible', scrolled.th && scrolled.th.top >= 100 && scrolled.th.top < 260);
 
-await page.screenshot({path: 'docs/shots/plan-memcached-scrolled.png'});
+await page.screenshot({path: shotsDir() + '/plan-memcached-scrolled.png'});
 await browser.close();
 stopping = true;
 await backend.stop();
