@@ -17,6 +17,7 @@ import {screen} from 'electron';
 
 import {PhpBackend} from './lib/backend.js';
 import {loadConnections, normalizeConnection, saveConnections, toEnvVars, validateConnection} from './lib/connections.js';
+import {createFileLogger} from './lib/logger.js';
 import {clampToScreen} from './lib/window-state.js';
 
 // Development: project root. Packaged: resources/ next to app.asar.
@@ -32,6 +33,11 @@ const WINDOW_STATE_FILE = path.join(app.getPath('userData'), 'window-state.json'
 const SETTINGS_FILE = path.join(app.getPath('userData'), 'settings.json');
 const RUNTIME_FILE = path.join(app.getPath('userData'), 'runtime.json');
 
+// Logs live under the project folder in dev and next to the packaged exe
+// when running the portable build (both are writable in the zip layout).
+const LOG_DIR = path.join(BASE, 'logs');
+const logger = createFileLogger(LOG_DIR);
+
 /** @type {PhpBackend|null} */
 let backend = null;
 
@@ -46,7 +52,14 @@ let quiting = false;
 /** Crash-restart budget for the supervised backend. */
 let backendRestarts = 0;
 
-const log = line => console.log(`[main] ${line}`);
+const log = (line, level = 'info') => logger[level](line);
+
+/** Connection summary for logs - hosts and names only, never credentials. */
+function connectionSummary(connections) {
+    return connections
+        .map(conn => `${conn.name || conn.host || conn.advanced?.path || '?'}(${conn.type}${conn.host ? ` ${conn.host}:${conn.port}` : ''})`)
+        .join(', ');
+}
 
 /**
  * Kill a php.exe left behind by a previous crashed run, so orphans cannot
@@ -286,6 +299,7 @@ function createConnectionsWindow() {
 
 async function restartBackend(metricsHash) {
     const connections = await loadConnections(CONNECTIONS_FILE);
+    log(`backend start: ${connections.length} connection(s): ${connectionSummary(connections) || 'none'}`);
 
     if (!backend) {
         backend = new PhpBackend({
@@ -294,17 +308,20 @@ async function restartBackend(metricsHash) {
             env: backendEnv(connections, metricsHash),
             logger: line => log(`php ${line}`),
             onUnexpectedExit: () => {
-                superviseRestart().catch(error => log(`supervisor failed: ${error.message}`));
+                log('backend exited unexpectedly, supervisor will restart it', 'warn');
+                superviseRestart().catch(error => log(`supervisor failed: ${error.message}`, 'error'));
             },
         });
 
         const url = await backend.start();
+        log(`backend ready at ${url} (pid ${backend.pid}), log dir: ${LOG_DIR}`);
         rememberBackendPid();
         return url;
     }
 
     const url = await backend.restart(backendEnv(connections, metricsHash));
     backendRestarts = 0; // A manual restart resets the crash budget.
+    log(`backend restarted at ${url} (pid ${backend.pid})`);
     rememberBackendPid();
     return url;
 }
@@ -312,6 +329,7 @@ async function restartBackend(metricsHash) {
 function registerIpc(metricsHash) {
     ipcMain.handle('app:open-connections', event => {
         if (!isTrustedSender(event)) {
+            log(`open-connections refused for untrusted sender ${event.senderFrame?.url ?? '?'}`, 'warn');
             return false;
         }
 
@@ -345,11 +363,13 @@ function registerIpc(metricsHash) {
         });
 
         if (errors.length > 0) {
+            log(`connections save rejected: ${errors.join(' ')}`, 'warn');
             return {ok: false, errors};
         }
 
         const connections = list.map(normalizeConnection);
         await saveConnections(CONNECTIONS_FILE, connections);
+        log(`connections saved: ${connectionSummary(connections) || 'none'}`);
 
         // A changed list means a changed environment for PHP. If the restart
         // fails the list is still saved - report honestly and try one plain
@@ -359,7 +379,7 @@ function registerIpc(metricsHash) {
         try {
             await restartBackend(metricsHash);
         } catch (error) {
-            log(`restart after save failed: ${error.message}`);
+            log(`restart after save failed: ${error.message}`, 'error');
 
             try {
                 const url = await backend.start();
@@ -396,6 +416,9 @@ if (!gotLock) {
     app.whenReady().then(async () => {
         sweepStaleBackend();
 
+        log(`CacheMainDesktop starting: app ${app.getVersion()}, electron ${process.versions.electron}, node ${process.versions.node}`);
+        log(`base dir ${BASE}, packaged=${app.isPackaged}, log dir ${LOG_DIR}`);
+
         await mkdir(path.join(DATA_DIR, 'metrics'), {recursive: true});
         await mkdir(path.join(DATA_DIR, 'twig'), {recursive: true});
 
@@ -426,6 +449,7 @@ if (!gotLock) {
 
     app.on('before-quit', () => {
         quiting = true;
+        log('app quitting');
 
         if (mainWindow && !mainWindow.isDestroyed()) {
             saveWindowStateSync(mainWindow.getNormalBounds());

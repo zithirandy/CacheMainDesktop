@@ -47,10 +47,26 @@ trait ServerTrait {
                 'PHP Version'         => PHP_VERSION,
                 'Zend Engine'         => zend_version(),
                 'Server API'          => PHP_SAPI,
-                'Loaded php.ini file' => php_ini_loaded_file() ?: 'None',
+                'Loaded php.ini file' => $this->toUtf8(php_ini_loaded_file() ?: 'None'),
                 'Disabled functions'  => $this->getDisabledFunctions(),
             ],
         ];
+    }
+
+    /**
+     * Windows PHP returns filesystem paths in the system ANSI code page
+     * (CP936/GBK on a Chinese system) while the page is UTF-8, so a
+     * non-ASCII install path garbles. Convert when the value is not already
+     * valid UTF-8; GB18030 is the GBK superset.
+     */
+    private function toUtf8(string $value): string {
+        if ($value === '' || mb_check_encoding($value, 'UTF-8')) {
+            return $value;
+        }
+
+        $converted = @mb_convert_encoding($value, 'UTF-8', 'GB18030');
+
+        return $converted === false || $converted === '' ? $value : $converted;
     }
 
     /**

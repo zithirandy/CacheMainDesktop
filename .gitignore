@@ -16,3 +16,6 @@ webapp/tmp/*
 *.log
 .DS_Store
 scripts/php-releases.json
+
+# Runtime logs
+logs/
