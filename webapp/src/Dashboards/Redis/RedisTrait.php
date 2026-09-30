@@ -161,6 +161,9 @@ trait RedisTrait {
         $keys = Helpers::sortBeforePaginate($this->getAllKeys(), ['link_title' => true]);
 
         if (isset($_GET['export_btn'])) {
+            // A backup must not inherit the listing cap - re-scan everything.
+            $keys = Helpers::sortBeforePaginate($this->getAllKeys(PHP_INT_MAX), ['link_title' => true]);
+
             Helpers::export($this->keysTableView($keys), 'redis_backup', fn (string $key): string => bin2hex($this->redis->dump($key)));
         }
 

@@ -121,9 +121,11 @@ function isTrustedSender(event) {
  * Point the main window at the backend, keeping whatever the user was
  * looking at (dashboard, server, db, tab). Without this every backend
  * restart dumps them back on the first dashboard, which reads as
- * "my change did nothing".
+ * "my change did nothing". A preserved ?server=N index that no longer
+ * exists after a connection-list edit is dropped rather than silently
+ * pointing at a different server.
  */
-function reloadMainWindow() {
+async function reloadMainWindow() {
     if (!mainWindow || mainWindow.isDestroyed() || !backend) {
         return;
     }
@@ -131,7 +133,19 @@ function reloadMainWindow() {
     let search = '';
 
     try {
-        search = new URL(mainWindow.webContents.getURL()).search;
+        const params = new URL(mainWindow.webContents.getURL()).searchParams;
+
+        if (params.has('server')) {
+            const dashboard = params.get('dashboard') ?? 'redis';
+            const connections = await loadConnections(CONNECTIONS_FILE);
+            const count = connections.filter(conn => conn.type === dashboard).length;
+
+            if (Number(params.get('server')) >= count) {
+                params.delete('server');
+            }
+        }
+
+        search = params.toString() ? `?${params}` : '';
     } catch {
         // A non-URL (early startup) just reloads the root.
     }
@@ -161,7 +175,7 @@ async function superviseRestart() {
         const url = await backend.start();
         rememberBackendPid();
         log(`backend restarted automatically (${url})`);
-        reloadMainWindow();
+        await reloadMainWindow();
     } catch (error) {
         log(`automatic restart failed: ${error.message}`);
         await superviseRestart();
@@ -280,7 +294,7 @@ function saveWindowStateSync(bounds) {
     }
 }
 
-function createConnectionsWindow() {
+async function createConnectionsWindow() {
     if (connectionsWindow && !connectionsWindow.isDestroyed()) {
         connectionsWindow.focus();
         return;
@@ -418,7 +432,7 @@ function registerIpc(metricsHash) {
             }
         }
 
-        reloadMainWindow();
+        await reloadMainWindow();
 
         return {ok: true, errors: [], warning};
     });

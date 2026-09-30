@@ -51,7 +51,7 @@
                             {% elseif item_key == 'ttl' and kitem is not empty %}
                                 <span title="{{ is_numeric(kitem) ? kitem|seconds : kitem }}">{{- kitem -}}</span>
                             {% elseif item_key starts with 'bytes_' %}
-                                <span class="file-size" data-bytes="{{ kitem }}">{{- kitem|bytes -}}</span>
+                                <span class="file-size" data-bytes="{{ kitem }}">{{- is_numeric(kitem) ? kitem|bytes : kitem -}}</span>
                             {% else %}
                                 {{- kitem -}}
                             {% endif %}

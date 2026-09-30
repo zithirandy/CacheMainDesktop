@@ -56,6 +56,10 @@ check('memcached: no fake 0.00B sizes', !mcPage.includes('0.00B') && !mcPage.inc
 check('memcached: no "0 max" connections', !mcPage.includes('/ 0 max'));
 check('delete-all button present (confirm handled by scripts.js)', mcPage.includes('id="delete_all"'));
 
+const treeRes = await fetch(`${url}/?dashboard=memcached&view=tree`);
+const treeBody = await treeRes.text();
+check('memcached tree view renders (n/a sizes guarded)', treeRes.status === 200 && !treeBody.includes('Template error'), 'status ' + treeRes.status);
+
 const redisPage = await fetch(`${url}/?dashboard=redis`).then(r => r.text());
 check('redis: panel says Server version', redisPage.includes('Server version'));
 check('thousands separator is a comma (7,197-style)', /,\d{3}\b/.test(redisPage.replace(/PHPMem|Predis/g, '')) || redisPage.includes('7,197'));
@@ -104,11 +108,17 @@ check('More dropdown present', top.hasMore);
 check('primary tabs are 3 or fewer', top.visibleTabLabels.length <= 3, `got ${JSON.stringify(top.visibleTabLabels)}`);
 
 // Open the More dropdown via a DOM click (details toggle needs no actionability wait).
-const moreItems = await page.evaluate(() => {
+const more = await page.evaluate(() => {
     document.querySelector('.tabs-more-toggle').click();
 
-    return [...document.querySelectorAll('.tabs-more-menu a')].map(e => e.textContent.trim());
+    const menu = document.querySelector('.tabs-more-menu');
+    const r = menu.getBoundingClientRect();
+    const visible = !menu.classList.contains('hidden') && r.height > 20 && r.bottom <= window.innerHeight && r.right <= window.innerWidth;
+
+    return {visible: visible ? 1 : 0, rect: {top: Math.round(r.top), bottom: Math.round(r.bottom), h: Math.round(r.height)}, items: [...menu.querySelectorAll('a')].map(e => e.textContent.trim())};
 });
+const moreItems = more.items;
+check('More menu is actually visible (not clipped)', more.visible === 1, JSON.stringify(more.rect));
 console.log('More menu:', JSON.stringify(moreItems));
 check('More menu contains Watcher and Metrics', moreItems.includes('Watcher') && moreItems.includes('Metrics'));
 

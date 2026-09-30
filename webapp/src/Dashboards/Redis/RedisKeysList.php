@@ -19,12 +19,17 @@ trait RedisKeysList {
      *
      * @throws Exception
      */
-    public function getAllKeys(): array {
+    /**
+     * @param int|null $override_scansize export passes PHP_INT_MAX so backups
+     *                                      are never silently truncated by the
+     *                                      UI listing cap
+     */
+    public function getAllKeys(?int $override_scansize = null): array {
         $search = (string) Http::get('s', '');
         $this->template->addGlobal('search_value', $search);
 
         $filter = $this->searchPattern($search);
-        $scansize = Config::get('redisoptions.scansize');
+        $scansize = $override_scansize ?? Config::get('redisoptions.scansize');
         $scan_threshold = Config::get('redisoptions.scanthreshold', 100_000);
 
         if ($scansize !== null || $this->redis->databaseSize() > $scan_threshold || !$this->isCommandSupported('KEYS')) {

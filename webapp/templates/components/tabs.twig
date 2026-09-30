@@ -19,11 +19,19 @@
             {% set more_links = more_links|merge({(link): title}) %}
         {% endif %}
     {% endfor %}
+
+    {# Dashboards whose tab keys never match primary_tabs (e.g. OPCache)
+       would end up with an empty bar and only a More button - keep all
+       their tabs primary instead. #}
+    {% if primary_links|length == 0 %}
+        {% set primary_links = links %}
+        {% set more_links = {} %}
+    {% endif %}
 {% else %}
     {% set primary_links = links %}
 {% endif %}
 
-<ul{% if main %} id="pca_tabs"{% endif %} class="flex overflow-x-auto mb-4{{ pills ? ' gap-3' : '' }}{{ class|space }}">
+<ul{% if main %} id="pca_tabs"{% endif %} class="flex mb-4{{ pills ? ' gap-3' : '' }}{{ class|space }}">
     {% for link, title in primary_links %}
         {% if tabs %}
             {% set is_active = selected is defined ? (selected == link) : (links|keys|first == link) %}
