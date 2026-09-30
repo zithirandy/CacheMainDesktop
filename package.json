@@ -14,7 +14,7 @@
     "smoke": "node scripts/smoke.mjs",
     "start": "electron .",
     "predist": "node scripts/fetch-php.mjs && npm run build:css",
-    "dist": "electron-builder --win zip"
+    "dist": "node scripts/build.mjs --win zip"
   },
   "devDependencies": {
     "@tailwindcss/cli": "^4.3.3",
