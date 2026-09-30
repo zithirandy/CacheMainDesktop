@@ -6,17 +6,26 @@ import path from 'node:path';
 import {fileURLToPath} from 'node:url';
 
 import {PhpBackend} from '../lib/backend.js';
+import {launchBrowser, TEST_ENV} from './lib/test-env.mjs';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-process.on('uncaughtException', () => process.exit(0));
+let stopping = false;
+process.on('uncaughtException', error => {
+    if (stopping && error?.code === 'ERR_ASSERTION') {
+        return;
+    }
+
+    console.error(error);
+    process.exit(1);
+});
 
 const backend = new PhpBackend({
     phpExe: path.join(ROOT, 'php', 'php.exe'),
     docroot: path.join(ROOT, 'webapp'),
     env: {
-        PCA_REDIS_0_HOST: '192.0.2.122',
+        PCA_REDIS_0_HOST: TEST_ENV.redisHost,
         PCA_REDIS_0_NAME: 'Prod',
-        PCA_REDIS_0_PASSWORD: '***REDACTED***',
+        PCA_REDIS_0_PASSWORD: TEST_ENV.redisPassword,
         PCA_REDIS_0_DATABASE: '5',
         PCA_TMPDIR: path.join(ROOT, 'webapp', 'tmp'),
     },
@@ -25,8 +34,7 @@ const backend = new PhpBackend({
 
 const url = await backend.start();
 
-const {chromium} = await import('playwright-core');
-const browser = await chromium.launch({executablePath: 'C:/Users/Administrator/AppData/Local/ms-playwright/chromium-1234/chrome-win64/chrome.exe'});
+const browser = await launchBrowser();
 const page = await browser.newPage({viewport: {width: 1280, height: 840}});
 
 await page.goto(`${url}/?dashboard=redis&db=5`);
@@ -63,5 +71,6 @@ console.log('scrolled :', JSON.stringify(scrolled), '| tabs still visible:', scr
 await page.screenshot({path: 'docs/shots/sticky-scrolled.png'});
 
 await browser.close();
+stopping = true;
 await backend.stop();
 process.exit(scrolled.tabsTop >= -20 && scrolled.tabsTop < 40 ? 0 : 1);

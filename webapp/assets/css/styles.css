@@ -1943,9 +1943,6 @@
 .pca-rail .select, .pca-sidebar .select {
   border-radius: 8px;
 }
-#pca_tabs {
-  z-index: 40;
-}
 .keys-toolbar {
   position: sticky;
   top: 1.9375rem;

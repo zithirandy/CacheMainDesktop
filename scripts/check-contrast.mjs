@@ -8,6 +8,7 @@ import path from 'node:path';
 import {fileURLToPath} from 'node:url';
 
 import {PhpBackend} from '../lib/backend.js';
+import {launchBrowser, TEST_ENV} from './lib/test-env.mjs';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 
@@ -25,7 +26,7 @@ const backend = new PhpBackend({
     phpExe: path.join(ROOT, 'php', 'php.exe'),
     docroot: path.join(ROOT, 'webapp'),
     env: {
-        PCA_MEMCACHED_0_HOST: '192.0.2.233',
+        PCA_MEMCACHED_0_HOST: TEST_ENV.mcHost,
         PCA_MEMCACHED_0_NAME: 'Mem_233',
         PCA_TMPDIR: path.join(ROOT, 'webapp', 'tmp'),
     },
@@ -34,8 +35,7 @@ const backend = new PhpBackend({
 
 const url = await backend.start();
 
-const {chromium} = await import('playwright-core');
-const browser = await chromium.launch({executablePath: 'C:/Users/Administrator/AppData/Local/ms-playwright/chromium-1234/chrome-win64/chrome.exe'});
+const browser = await launchBrowser();
 const page = await browser.newPage({viewport: {width: 1280, height: 840}});
 
 await page.goto(`${url}/?dashboard=memcached`);
@@ -105,9 +105,11 @@ const ratios = await page.evaluate(() => {
 
         const cs = getComputedStyle(el);
         let node = el;
+        let bg = getComputedStyle(node).backgroundColor;
 
-        while (node && cs.backgroundColor === 'rgba(0, 0, 0, 0)') {
+        while (node && (bg === 'rgba(0, 0, 0, 0)' || bg === 'transparent')) {
             node = node.parentElement;
+            bg = node ? getComputedStyle(node).backgroundColor : bg;
         }
 
         return {
@@ -145,7 +147,7 @@ for (const theme of ['dark', 'light']) {
         window.pcaDesktop = {
             platform: 'electron',
             openConnections: () => true,
-            connections: {list: async () => [{id: 'x', type: 'redis', name: 'Redis_122', host: '192.0.2.122', port: 6379, database: 0}], save: async () => ({ok: true, errors: [], warning: ''})},
+            connections: {list: async () => [{id: 'x', type: 'redis', name: 'Redis_122', host: TEST_ENV.redisHost, port: 6379, database: 0}], save: async () => ({ok: true, errors: [], warning: ''})},
         };
     });
     // The page already initialized without the bridge; re-run its init effects by reloading with the bridge in place.

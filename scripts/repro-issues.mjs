@@ -1,6 +1,6 @@
 /**
  * Read-only reproduction against the real servers, from DLFifthApi sources:
- *  - Redis 192.0.2.122:6379 (db 0 vs db 5 tab bar)
+ *  - Redis TEST_ENV.redisHost:6379 (db 0 vs db 5 tab bar)
  *  - Memcached 192.0.2.233:11211 (rendering only)
  *
  * Only INFO / SELECT / stats reads are issued - no key is ever touched.
@@ -11,15 +11,24 @@ import {fileURLToPath} from 'node:url';
 
 import {PhpBackend} from '../lib/backend.js';
 import {toEnvVars} from '../lib/connections.js';
+import {TEST_ENV} from './lib/test-env.mjs';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 
-process.on('uncaughtException', () => process.exit(0));
+let stopping = false;
+process.on('uncaughtException', error => {
+    if (stopping && error?.code === 'ERR_ASSERTION') {
+        return;
+    }
+
+    console.error(error);
+    process.exit(1);
+});
 
 const connections = [
-    {id: 'prod', type: 'redis', name: 'Prod', host: '192.0.2.122', port: 6379, database: 0, password: '***REDACTED***'},
-    {id: 'mc', type: 'memcached', name: 'Mc', host: '192.0.2.233', port: 11211, database: 0},
-    {id: 'prod2', type: 'redis', name: 'Prod2', host: '192.0.2.122', port: 6380, database: 0, password: '***REDACTED***'},
+    {id: 'prod', type: 'redis', name: 'Prod', host: 'TEST_ENV.redisHost', port: 6379, database: 0, password: TEST_ENV.redisPassword},
+    {id: 'mc', type: 'memcached', name: 'Mc', host: TEST_ENV.mcHost, port: Number(TEST_ENV.mcPort), database: 0},
+    {id: 'prod2', type: 'redis', name: 'Prod2', host: 'TEST_ENV.redisHost', port: 6380, database: 0, password: TEST_ENV.redisPassword},
 ];
 
 const backend = new PhpBackend({
@@ -56,5 +65,6 @@ for (const db of [0, 5]) {
     console.log(`panels db${db}: ${Date.now() - t0}ms ${body.slice(0, 140)}`);
 }
 
+stopping = true;
 await backend.stop();
 process.exit(0);

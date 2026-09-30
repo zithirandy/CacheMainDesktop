@@ -19,3 +19,5 @@ scripts/php-releases.json
 
 # Runtime logs
 logs/
+stderr
+scripts/repro-save-capture.json

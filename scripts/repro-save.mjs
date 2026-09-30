@@ -13,6 +13,7 @@ import path from 'node:path';
 import {fileURLToPath} from 'node:url';
 
 import {normalizeConnection, validateConnection} from '../lib/connections.js';
+import {TEST_ENV} from './lib/test-env.mjs';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const OUT = path.join(ROOT, 'scripts', 'repro-save-capture.json');
@@ -20,12 +21,9 @@ const OUT = path.join(ROOT, 'scripts', 'repro-save-capture.json');
 const payloads = [];
 
 async function main() {
-    const {chromium} = await import('playwright').catch(() => import('playwright-core'));
+    const {launchBrowser} = await import('./lib/test-env.mjs');
 
-    // Reuse the browser shipped with the Playwright tooling on this machine.
-    const exe = 'C:/Users/Administrator/AppData/Local/ms-playwright/chromium-1234/chrome-win64/chrome.exe';
-
-    const browser = await chromium.launch({executablePath: exe});
+    const browser = await launchBrowser();
     const page = await browser.newPage();
 
     await page.addInitScript(() => {
@@ -46,7 +44,7 @@ async function main() {
                 list: async () => [
                     {
                         id: 'existing01', type: 'redis', name: '已有Redis',
-                        host: '192.0.2.122', port: 6379, database: 0, password: '***REDACTED***',
+                        host: TEST_ENV.redisHost, port: 6379, database: 0, password: TEST_ENV.redisPassword,
                     },
                 ],
                 save: async list => {

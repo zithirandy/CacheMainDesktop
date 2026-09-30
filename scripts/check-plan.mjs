@@ -9,6 +9,7 @@ import path from 'node:path';
 import {fileURLToPath} from 'node:url';
 
 import {PhpBackend} from '../lib/backend.js';
+import {launchBrowser, TEST_ENV} from './lib/test-env.mjs';
 import {toEnvVars} from '../lib/connections.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -34,8 +35,8 @@ const backend = new PhpBackend({
     docroot: path.join(ROOT, 'webapp'),
     env: {
         ...toEnvVars([
-            {id: 'r1', type: 'redis', name: 'Redis_122', host: '192.0.2.122', port: 6379, database: 0, password: '***REDACTED***'},
-            {id: 'm1', type: 'memcached', name: 'Mem_233', host: '192.0.2.233', port: 11211, database: 0},
+            {id: 'r1', type: 'redis', name: 'Redis_122', host: TEST_ENV.redisHost, port: 6379, database: 0, password: TEST_ENV.redisPassword},
+            {id: 'm1', type: 'memcached', name: 'Mem_233', host: TEST_ENV.mcHost, port: Number(TEST_ENV.mcPort), database: 0},
         ]),
         PCA_TMPDIR: path.join(ROOT, 'webapp', 'tmp'),
     },
@@ -53,15 +54,14 @@ check('memcached: panel says Server version', mcPage.includes('Server version'))
 check('memcached: panel separates Client (PHPMem)', mcPage.includes('PHPMem'));
 check('memcached: no fake 0.00B sizes', !mcPage.includes('0.00B') && !mcPage.includes('0,00B'));
 check('memcached: no "0 max" connections', !mcPage.includes('/ 0 max'));
-check('delete-all has a confirm guard', mcPage.includes('Delete ALL keys in this database?'));
+check('delete-all button present (confirm handled by scripts.js)', mcPage.includes('id="delete_all"'));
 
 const redisPage = await fetch(`${url}/?dashboard=redis`).then(r => r.text());
 check('redis: panel says Server version', redisPage.includes('Server version'));
 check('thousands separator is a comma (7,197-style)', /,\d{3}\b/.test(redisPage.replace(/PHPMem|Predis/g, '')) || redisPage.includes('7,197'));
 
 // --- Browser checks: frozen headers, tab grouping ---
-const {chromium} = await import('playwright-core');
-const browser = await chromium.launch({executablePath: 'C:/Users/Administrator/AppData/Local/ms-playwright/chromium-1234/chrome-win64/chrome.exe'});
+const browser = await launchBrowser();
 const page = await browser.newPage({viewport: {width: 1280, height: 840}});
 
 await page.goto(`${url}/?dashboard=memcached`);

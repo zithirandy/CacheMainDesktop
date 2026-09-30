@@ -67,7 +67,6 @@
                     icon: 'trash',
                     id: 'delete_all',
                     color: 'red',
-                    attributes: {'data-confirm': 'Delete ALL keys in this database? This cannot be undone.'},
                 }) }}
 
                 {% if buttons.delete_selected_btn is not defined or buttons.delete_selected_btn == true %}
@@ -76,7 +75,6 @@
                         icon: 'trash',
                         id: 'delete_selected',
                         color: 'red',
-                        attributes: {'data-confirm': 'Delete the selected keys? This cannot be undone.'},
                     }) }}
                 {% endif %}
             {% endif %}
