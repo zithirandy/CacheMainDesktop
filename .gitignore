@@ -24,3 +24,6 @@ scripts/repro-save-capture.json
 
 # Debug screenshots live outside the repo (see scripts/lib/test-env.mjs)
 docs/shots/
+
+# Session handoff notes (local only)
+handoff/
