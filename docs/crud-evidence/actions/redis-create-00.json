@@ -1,0 +1,6 @@
+[
+  {"nav": "http://127.0.0.1:60431/?dashboard=redis&server=3&form=new"},
+  {"wait": 1500},
+  {"readExpr": "JSON.stringify({server: document.querySelector('#server_select')?.selectedOptions[0]?.text, db: document.querySelector('#db_select')?.selectedOptions[0]?.text})"},
+  {"dumpText": true}
+]

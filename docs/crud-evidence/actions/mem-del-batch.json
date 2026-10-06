@@ -1,0 +1,6 @@
+[
+  {"nav": "http://127.0.0.1:60431/?dashboard=memcached&server=2"},
+  {"wait": 1500},
+  {"readExpr": "(() => { const keys = ['crud:mem:imported:ok','crud:mem:ttltrap']; let n = 0; for (const k of keys) { const tr = document.querySelector('tr[data-key=\"'+btoa(k)+'\"]'); if (tr) { const cb = tr.querySelector('.check-key'); cb.checked = true; cb.dispatchEvent(new Event('change',{bubbles:true})); n++; } } return 'checked ' + n; })()"},
+  {"readExpr": "JSON.stringify({server: document.querySelector('#server_select')?.selectedOptions[0]?.text, checked: document.querySelectorAll('.check-key:checked').length})"}
+]

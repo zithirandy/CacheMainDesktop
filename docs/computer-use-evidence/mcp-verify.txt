@@ -1,0 +1,90 @@
+windows-mcp 能力验证原始结果（2026-10-06 更正轮）
+====================================================
+
+执行方式说明（本会话工具可见性受限，以下为如实记录）
+----------------------------------------------------
+本更正轮的 Claude 会话仍是从父目录 F:\原E盘 启动的，其会话内工具清单里没有
+mcp__windows-mcp__* 函数；定向等待返回原文：
+
+    WaitForMcpServers(servers=["windows-mcp"]) ->
+    ready: false
+    Unknown (no MCP server with this name is configured): windows-mcp
+
+根因诊断（配置层证据，非猜测）：
+  1) 在项目根 F:\原E盘\CacheMainDesktop 下执行 `claude mcp get windows-mcp`：
+         windows-mcp:
+           Scope: Local config (private to you in this project)
+           Status: ✔ Connected
+           Type: stdio
+           Command: uvx
+           Args: windows-mcp serve
+  2) 在父目录 F:\原E盘 下执行同一命令：
+         No MCP server named "windows-mcp". (Configured servers: chrome-devtools,
+         codegraph, gitnexus, pencil, ...)
+  3) ~/.claude.json 的项目条目核对：仅 "F:/原E盘/CacheMainDesktop" 条目下挂有
+     windows-mcp（Local scope 按会话启动目录解析）。
+  => 上一轮与本轮主会话的「工具不可用」均为会话启动目录导致的服务器未加载，
+     属会话可见性问题；环境层面 windows-mcp 已配置且可连接（与更正方留档一致）。
+
+因此本轮的 4 项工具探测改由「项目根目录起嵌套 claude -p + stream-json 落盘原文」
+执行（与更正方验证方法一致；stream-json 中的 tool_result 为未经模型改写的原文）。
+注意：嵌套 -p 会话首次运行时 windows-mcp 处于 pending（uvx 冷启动慢），模型未等待
+即报不可用；正确做法是先调用内置 WaitForMcpServers 阻塞等待就绪再调用工具。
+本轮全部有效探测均带该等待步骤，等待返回原文：
+
+    ready: true
+    Connected (their tools are now available — call them directly): windows-mcp
+
+一、DisplayInventory —— 成功
+----------------------------------------------------
+# INPUT: {}
+# 原文：
+{"result":[{"index":0,"device":"\\\\.\\DISPLAY65","primary":true,"bounds":{"left":0,"top":0,"right":2880,"bottom":1800,"width":2880,"height":1800},"work_area":{"left":0,"top":0,"right":2880,"bottom":1704,"width":2880,"height":1704},"resolution":"2880x1800","orientation":"landscape","effective_dpi":192,"scale":2}]}
+
+与更正方留档一致（单显示器 \\.\DISPLAY65、2880x1800、DPI 缩放 200%、工作区
+2880x1704）。上一轮 probe-env.ps1 读到的 1440x900 为 GDI 逻辑分辨率（物理
+2880x1800 ÷ 200%），两者单位不同、不矛盾。
+
+二、App —— 可调用；无「列出窗口」模式；本环境切换前台失败（原文留档）
+----------------------------------------------------
+工具实际只有 launch / launch_executable / resize / switch 四种模式，没有列出
+窗口的动作。两次调用原文：
+
+(a) 无 name 参数（探测模式时）：
+    # INPUT: {"mode":"switch"}
+    Error calling tool 'App': Error switching app: expected string or bytes-like object, got 'NoneType'
+
+(b) 正确参数 mode=switch + name=CacheMainDesktop（应用正在运行）：
+    # INPUT: {"mode":"switch","name":"CacheMainDesktop"}
+    Error calling tool 'App': Failed to bring CacheMainDesktop to the foreground within 1 second.
+
+(b) 说明工具按名称定位到了应用并执行了切换动作，卡在 OS 前台激活 1 秒超时
+（本会话跑在 RDP 会话内，后台进程抢占前台受系统限制；此为环境性失败模式，
+是否在控制台会话可成未验证）。「确认窗口存在」由 Snapshot 的 Opened Windows
+表承担（见 mcp-snapshot-cachemaindesktop.txt），窗口级枚举可靠。
+
+三、Snapshot —— 成功（窗口级）；元素级对本 Electron 应用不可见
+----------------------------------------------------
+# INPUT: {}
+两次成功调用（重启前 27,943 字符 / 加 a11y 旗标重启后 28,295 字符），均返回
+光标位置、虚拟桌面、约 40 个已打开窗口表与 UI 树。CacheMainDesktop 相关摘录
+（含元素级阴性结果与对照实验）见 mcp-snapshot-cachemaindesktop.txt 与
+mcp-snapshot-ui.txt。其余窗口行从略（含无关内网信息，按保密要求不入档）。
+
+四、Screenshot —— 失败（第一手复现，与更正方留档逐字一致）
+----------------------------------------------------
+# INPUT: {}
+# 原文：
+["Error capturing screenshot: screen grab failed. Please try again."]
+
+结论矩阵（本轮实测）
+----------------------------------------------------
+工具                 | 结果
+DisplayInventory     | 可用（原文见上）
+Snapshot             | 可用（窗口枚举可靠；对 Electron 内容元素级不可见，加
+                     |   --force-renderer-accessibility 亦不可见，见专项文件）
+Screenshot           | 不可用（screen grab failed，两轮独立复现；与 GDI
+                     |   CopyFromScreen「句柄无效」互为印证）
+App                  | 可调用；4 种模式无列窗功能；switch 定位到应用但 RDP
+                     |   下前台激活超时（环境性，未在控制台会话复测）
+Click / Type 等其余 | 本轮未测试（上轮已因工具缺席全部走 CDP，无新增证据）

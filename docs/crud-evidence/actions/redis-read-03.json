@@ -1,0 +1,19 @@
+[
+  {"nav": "http://127.0.0.1:60431/?dashboard=redis&server=3&s=crud:seed:string"},
+  {"wait": 1200},
+  {"readExpr": "JSON.stringify({q:'exact crud:seed:string', rows: document.querySelectorAll('tbody tr').length, rows_text: [...document.querySelectorAll('tbody tr td:nth-child(2)')].map(td=>td.textContent.trim())})"},
+  {"nav": "http://127.0.0.1:60431/?dashboard=redis&server=3&s=seed"},
+  {"wait": 1200},
+  {"readExpr": "JSON.stringify({q:'partial seed', rows: document.querySelectorAll('tbody tr').length, first3: [...document.querySelectorAll('tbody tr td:nth-child(2)')].slice(0,3).map(td=>td.textContent.trim())})"},
+  {"nav": "http://127.0.0.1:60431/?dashboard=redis&server=3&s=crud:bulk:*"},
+  {"wait": 1200},
+  {"readExpr": "JSON.stringify({q:'wildcard crud:bulk:*', rows: document.querySelectorAll('tbody tr').length})"},
+  {"nav": "http://127.0.0.1:60431/?dashboard=redis&server=3&s=zzz-does-not-exist"},
+  {"wait": 1200},
+  {"readExpr": "JSON.stringify({q:'nonexistent', rows: document.querySelectorAll('tbody tr').length, emptyMsg: document.querySelector('tbody')?.textContent.trim().slice(0,100) || document.body.innerText.match(/No keys[^\\n]*/)?.[0]})"},
+  {"shot": "F:\\原E盘\\CacheMainDesktop-历史\\调试记录\\shots\\crud\\redis-04b-search-none.png"},
+  {"nav": "http://127.0.0.1:60431/?dashboard=redis&server=3&s=%E4%B8%AD%E6%96%87"},
+  {"wait": 1200},
+  {"readExpr": "JSON.stringify({q:'Chinese 中文', rows: document.querySelectorAll('tbody tr').length, rows_text: [...document.querySelectorAll('tbody tr td:nth-child(2)')].map(td=>td.textContent.trim()), searchValue: document.querySelector('#search_key')?.value})"},
+  {"shot": "F:\\原E盘\\CacheMainDesktop-历史\\调试记录\\shots\\crud\\redis-04c-search-chinese.png"}
+]

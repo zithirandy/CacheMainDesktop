@@ -1,0 +1,21 @@
+[
+  {"click": "#add"},
+  {"set": {"sel": "#f-type", "val": "redis"}},
+  {"set": {"sel": "#f-name", "val": "本地 Redis"}},
+  {"set": {"sel": "#f-host", "val": "127.0.0.1"}},
+  {"set": {"sel": "#f-port", "val": "6379"}},
+  {"set": {"sel": "#f-database", "val": "0"}},
+  {"readValue": "#f-type"},
+  {"readValue": "#f-name"},
+  {"readValue": "#f-host"},
+  {"readValue": "#f-port"},
+  {"readValue": "#f-database"},
+  {"shot": "docs/computer-use-evidence/connections-editor-redis.png", "shotSel": "#editor"},
+  {"click": "#editor-apply"},
+  {"readText": "#status"},
+  {"count": "#list .conn"},
+  {"shot": "docs/computer-use-evidence/connections-status-redis.png", "shotSel": ".app-footer"},
+  {"click": "#save"},
+  {"wait": 4500},
+  {"readText": "#status"}
+]

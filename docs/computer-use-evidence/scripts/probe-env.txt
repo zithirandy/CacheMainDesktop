@@ -1,0 +1,11 @@
+﻿=== OS ===
+Caption: Microsoft Windows 11 专业版
+Version: 10.0.26200 Build 26200
+
+=== Display inventory (PowerShell equivalent; windows-mcp DisplayInventory unavailable) ===
+Screen \\.\DISPLAY65: 1440x900 at (0,0) Primary=True
+
+=== GDI screen capture probe (equivalent of windows-mcp Screenshot) ===
+VirtualScreen: X=0 Y=0 W=1440 H=900
+CopyFromScreen FAILED (original message): 使用“5”个参数调用“CopyFromScreen”时发生异常:“句柄无效。”
+Exception type: System.Management.Automation.MethodInvocationException

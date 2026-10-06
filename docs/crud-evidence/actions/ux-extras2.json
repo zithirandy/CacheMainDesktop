@@ -1,0 +1,13 @@
+[
+  {"readExpr": "JSON.stringify({allButtons: [...document.querySelectorAll('button')].map(b=>b.textContent.trim()||b.id||b.getAttribute('aria-label')).filter(Boolean).slice(0,15), allLinks: [...document.querySelectorAll('main a, .card a, form a')].map(a=>a.textContent.trim()).filter(Boolean).slice(0,12)})"},
+  {"nav": "http://127.0.0.1:60431/?dashboard=memcached&server=2&form=new"},
+  {"wait": 1200},
+  {"set": {"sel": "#key", "val": "crud:mem:entersubmit"}},
+  {"set": {"sel": "#value", "val": "via-enter"}},
+  {"readExpr": "(() => { const k = document.querySelector('#key'); k.dispatchEvent(new KeyboardEvent('keydown', {key:'Enter', bubbles:true})); k.dispatchEvent(new KeyboardEvent('keyup', {key:'Enter', bubbles:true})); return 'enter sent from #key'; })()"},
+  {"wait": 2000},
+  {"readExpr": "JSON.stringify({afterEnter: location.search})"},
+  {"nav": "http://127.0.0.1:60431/?dashboard=redis&server=3"},
+  {"wait": 1500},
+  {"readExpr": "JSON.stringify({redisSearchAria: document.querySelector('#search_key')?.getAttribute('aria-label')})"}
+]

@@ -1,0 +1,33 @@
+[
+  {"nav": "http://127.0.0.1:60431/?dashboard=redis&server=3&form=new"},
+  {"wait": 1200},
+  {"set": {"sel": "#value", "val": "val-for-empty-key-test"}},
+  {"readExpr": "JSON.stringify({keyRequired: document.querySelector('#key').required, keyValid: document.querySelector('#key').checkValidity(), keyMsg: document.querySelector('#key').validationMessage, formValid: document.querySelector('form').checkValidity()})"},
+  {"click": "#submit"},
+  {"wait": 1000},
+  {"readExpr": "JSON.stringify({stillOnForm: location.search.includes('form=new'), url: location.search})"},
+
+  {"nav": "http://127.0.0.1:60431/?dashboard=redis&server=3&form=new"},
+  {"wait": 800},
+  {"set": {"sel": "#key", "val": "crud:ui:with space"}},
+  {"set": {"sel": "#value", "val": "space-key-value"}},
+  {"click": "#submit"},
+  {"wait": 1500},
+  {"readExpr": "JSON.stringify({spaceKeyUrl: location.search, alert: [...document.querySelectorAll('.alert')].map(a=>a.textContent.trim().slice(0,120))})"},
+
+  {"nav": "http://127.0.0.1:60431/?dashboard=redis&server=3&form=new"},
+  {"wait": 800},
+  {"set": {"sel": "#key", "val": "crud:UI:中文键"}},
+  {"set": {"sel": "#value", "val": "中文值UI创建"}},
+  {"click": "#submit"},
+  {"wait": 1500},
+  {"readExpr": "JSON.stringify({chineseKeyUrl: location.search, alert: [...document.querySelectorAll('.alert')].map(a=>a.textContent.trim().slice(0,120))})"},
+
+  {"nav": "http://127.0.0.1:60431/?dashboard=redis&server=3&form=new"},
+  {"wait": 800},
+  {"set": {"sel": "#key", "val": "crud:ui:sp!@#$%^&*()"}},
+  {"set": {"sel": "#value", "val": "special-chars"}},
+  {"click": "#submit"},
+  {"wait": 1500},
+  {"readExpr": "JSON.stringify({specialUrl: location.search, alert: [...document.querySelectorAll('.alert')].map(a=>a.textContent.trim().slice(0,120))})"}
+]

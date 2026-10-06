@@ -1,0 +1,23 @@
+[
+  {"readText": "#status"},
+  {"click": "#add"},
+  {"set": {"sel": "#f-type", "val": "memcached"}},
+  {"set": {"sel": "#f-name", "val": "本地 Memcached"}},
+  {"set": {"sel": "#f-host", "val": "127.0.0.1"}},
+  {"set": {"sel": "#f-port", "val": "11211"}},
+  {"readValue": "#f-type"},
+  {"readValue": "#f-name"},
+  {"readValue": "#f-host"},
+  {"readValue": "#f-port"},
+  {"shot": "docs/computer-use-evidence/connections-window.png", "shotSel": ["#editor", ".app-footer"]},
+  {"click": "#editor-apply"},
+  {"readText": "#status"},
+  {"count": "#list .conn"},
+  {"click": "#save"},
+  {"wait": 2000},
+  {"readText": "#status"},
+  {"wait": 2000},
+  {"readText": "#status"},
+  {"wait": 3000},
+  {"readText": "#status"}
+]

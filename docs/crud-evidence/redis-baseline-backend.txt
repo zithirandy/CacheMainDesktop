@@ -1,0 +1,15 @@
+== crud:seed:hash
+  type: hash
+  ttl: -1
+== crud:seed:list
+  type: list
+  ttl: -1
+== crud:seed:set
+  type: set
+  ttl: -1
+== crud:seed:string
+  type: string
+  ttl: -1
+== crud:seed:zset
+  type: zset
+  ttl: -1

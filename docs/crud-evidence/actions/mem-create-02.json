@@ -1,0 +1,18 @@
+[
+  {"nav": "http://127.0.0.1:60431/?dashboard=memcached&server=2&form=new"},
+  {"wait": 1200},
+  {"set": {"sel": "#key", "val": "crud:mem:str1"}},
+  {"set": {"sel": "#value", "val": "mem-ui-create"}},
+  {"click": "#submit"},
+  {"wait": 2000},
+  {"readExpr": "JSON.stringify({url1: location.search})"},
+
+  {"nav": "http://127.0.0.1:60431/?dashboard=memcached&server=2&form=new"},
+  {"wait": 1000},
+  {"set": {"sel": "#key", "val": "crud:mem:ttl120"}},
+  {"set": {"sel": "#expire", "val": "120"}},
+  {"set": {"sel": "#value", "val": "expires-soon"}},
+  {"click": "#submit"},
+  {"wait": 2000},
+  {"readExpr": "JSON.stringify({url2: location.search})"}
+]

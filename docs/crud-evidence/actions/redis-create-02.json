@@ -1,0 +1,15 @@
+[
+  {"nav": "http://127.0.0.1:60431/?dashboard=redis&server=3&form=new"},
+  {"wait": 1200},
+  {"readExpr": "JSON.stringify({rtypeValues: [...document.querySelectorAll('[name=rtype]')].map(r=>r.value), hashKeyVisibleDefault: !!document.querySelector('#hash_key')?.offsetParent, scoreVisibleDefault: !!document.querySelector('#score')?.offsetParent})"},
+  {"click": "[name=rtype][value=hash]"},
+  {"wait": 600},
+  {"readExpr": "JSON.stringify({hashKeyVisibleAfter: !!document.querySelector('#hash_key')?.offsetParent, hashExpireVisible: !!document.querySelector('#hash_expire')?.offsetParent})"},
+  {"set": {"sel": "#key", "val": "crud:ui:hash01"}},
+  {"set": {"sel": "#hash_key", "val": "f1"}},
+  {"set": {"sel": "#value", "val": "v1"}},
+  {"shot": "F:\\原E盘\\CacheMainDesktop-历史\\调试记录\\shots\\crud\\redis-10-create-hash-form.png"},
+  {"click": "#submit"},
+  {"wait": 2000},
+  {"readExpr": "JSON.stringify({afterUrl: location.search, rows: [...document.querySelectorAll('tbody tr')].map(tr=>tr.textContent.replace(/\\s+/g,' ').trim().slice(0,60))})"}
+]

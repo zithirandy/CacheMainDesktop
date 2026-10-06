@@ -1,0 +1,19 @@
+[
+  {"nav": "http://127.0.0.1:60431/?dashboard=redis&server=3&view=key&key=crud:seed:hash"},
+  {"wait": 1500},
+  {"readExpr": "JSON.stringify({key:'crud:seed:hash', heading: document.querySelector('h1,h2,h3')?.textContent.trim(), subkeys: document.querySelectorAll('tbody tr').length, sample: [...document.querySelectorAll('tbody tr')].slice(0,3).map(tr=>tr.textContent.replace(/\\s+/g,' ').trim().slice(0,80)), buttons: [...document.querySelectorAll('button, a.btn, .btn')].map(b=>b.textContent.trim()).filter(Boolean).slice(0,10)})"},
+  {"shot": "F:\\原E盘\\CacheMainDesktop-历史\\调试记录\\shots\\crud\\redis-05-keyview-hash.png"},
+  {"nav": "http://127.0.0.1:60431/?dashboard=redis&server=3&view=key&key=crud:seed:zset"},
+  {"wait": 1500},
+  {"readExpr": "JSON.stringify({key:'crud:seed:zset', rows: document.querySelectorAll('tbody tr').length, sample: [...document.querySelectorAll('tbody tr')].slice(0,3).map(tr=>tr.textContent.replace(/\\s+/g,' ').trim().slice(0,80))})"},
+  {"nav": "http://127.0.0.1:60431/?dashboard=redis&server=3&view=key&key=crud:big:100k"},
+  {"wait": 1500},
+  {"readExpr": "JSON.stringify({key:'crud:big:100k', valueLen: (document.querySelector('.code, pre, .value, #value')?.textContent||'').length, first80: (document.querySelector('.code, pre, .value, #value')?.textContent||'').slice(0,80), notice: document.body.innerText.match(/(truncat|showing|bytes|more)[^\\n]{0,80}/i)?.[0]})"},
+  {"shot": "F:\\原E盘\\CacheMainDesktop-历史\\调试记录\\shots\\crud\\redis-06-keyview-100k.png"},
+  {"nav": "http://127.0.0.1:60431/?dashboard=redis&server=3&view=key&key=crud:big:hash"},
+  {"wait": 1500},
+  {"readExpr": "JSON.stringify({key:'crud:big:hash', rows: document.querySelectorAll('tbody tr').length, paginator: [...document.querySelectorAll('.pagination a, nav a')].map(a=>a.textContent.trim()).filter(Boolean).slice(0,6)})"},
+  {"nav": "http://127.0.0.1:60431/?dashboard=redis&server=3&view=key&key=crud:bulk:ttl:long"},
+  {"wait": 1500},
+  {"readExpr": "JSON.stringify({key:'crud:bulk:ttl:long', ttlText: document.body.innerText.match(/(Expires|TTL)[^\\n]{0,60}/i)?.[0], editBtn: !!document.querySelector('a[href*=form\\\\=edit], button')})"}
+]

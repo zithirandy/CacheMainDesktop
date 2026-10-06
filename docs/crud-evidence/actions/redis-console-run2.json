@@ -1,0 +1,9 @@
+[
+  {"readExpr": "(() => { const i = document.querySelector('#console_input'); i.value = 'MONITOR'; i.dispatchEvent(new Event('input', {bubbles:true})); i.dispatchEvent(new KeyboardEvent('keydown', {key:'Enter', bubbles:true})); return 'monitor sent'; })()"},
+  {"wait": 1500},
+  {"readExpr": "JSON.stringify({afterMonitor: document.querySelector('#console')?.innerText.replace(/\\s+/g,' ').trim().slice(-260)})"},
+  {"readExpr": "(() => { const i = document.querySelector('#console_input'); i.value = ''; i.dispatchEvent(new KeyboardEvent('keydown', {key:'ArrowUp', bubbles:true})); return 'arrowup -> ' + JSON.stringify(document.querySelector('#console_input').value); })()"},
+  {"wait": 500},
+  {"readExpr": "JSON.stringify({historyRecall: document.querySelector('#console_input')?.value})"},
+  {"shot": "F:\\原E盘\\CacheMainDesktop-历史\\调试记录\\shots\\crud\\redis-17-console-monitor-history.png"}
+]

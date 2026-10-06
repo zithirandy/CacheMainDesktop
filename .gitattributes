@@ -1,0 +1,16 @@
+# Shell scripts must keep LF endings: core.autocrlf=true on Windows would
+# otherwise rewrite them to CRLF, and a CRLF shebang fails in Git Bash/WSL/CI
+# with a bare "\r: command not found".
+*.sh text eol=lf
+
+# Windows-native scripts keep CRLF.
+*.ps1 text eol=crlf
+*.bat text eol=crlf
+*.cmd text eol=crlf
+
+# Binary assets: never text-convert them.
+*.png binary
+*.ico binary
+*.zip binary
+*.phar binary
+*.db binary

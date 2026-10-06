@@ -1,0 +1,44 @@
+Snapshot 中 CacheMainDesktop 相关元素树摘录（2026-10-06 更正轮）
+==================================================================
+
+来源：mcp__windows-mcp__Snapshot 两次成功调用（嵌套 claude -p 原文，经解码；
+仅摘录与本应用相关的行，其余窗口从略——其中含无关内网信息，按保密要求不入档）。
+
+【第一次：重启前（应用自上轮一直运行，主窗口在 Redis 面板，Connections 编辑窗仍开）】
+
+Opened Windows 表（节选，表头经缩略）：
+    Name                Depth  Status   Width  Height  Handle
+    CacheMainDesktop        0  Normal    2372    1236  1772672
+    （……其余约 39 行从略……）
+
+UI Tree（与 CacheMainDesktop 相关的节点，逐字）：
+    ├── window "Connections"
+    ├── window "Redis - CacheMainDesktop"
+
+要点：两个窗口均以「命名叶子节点」出现——没有任何子元素（无窗格/按钮/文本）。
+即 OS 级 UIA 树只能看到窗口标题，看不到 Electron 渲染的网页内容。
+
+【第二次：加 --force-renderer-accessibility 硬重启后（scripts/restart-app-a11y.ps1，
+   新实例 pid 66684，主窗口标题 Server - CacheMainDesktop）】
+
+Opened Windows 表（节选）：
+    Name                        Depth  Status   Width  Height  Handle
+    CacheMainDesktop                0  Normal    2372    1236  1772672   <- 旧实例句柄（已死，仍被枚举）
+    Server - CacheMainDesktop      33  Normal    2576    1682  1313464   <- 新实例窗口
+
+UI Tree：本次树中没有任何名为 *CacheMainDesktop* 的节点（新窗口未以命名节点
+出现，可能对应某个无名 window 节点）；同样没有任何本应用内部元素。
+
+对照实验（同一棵树里，原生窗口可以下钻，证明遍历器本身具备下钻能力）：
+    └── window "连锁售票管理系统(试用版)版本:2021.2.4.1"
+        ├── (0,0) 按钮 "还原"  [action: click]
+        └── (0,0) 按钮 "关闭"  [action: click]
+（任务栏、桌面 Program Manager 同样有完整子树，此处从略。）
+
+结论（实测边界）：
+  1) Snapshot 的 Opened Windows 表对窗口级枚举可靠（两轮都枚举到本应用；
+     重启后还观察到过期句柄与活动窗口并存的现象——枚举表可能含僵尸条目）。
+  2) UI 树对本 Electron 应用止步于窗口标题，元素级为空；加
+     --force-renderer-accessibility 重启后仍然为空（阴性结果，实测两次）。
+  3) 原生窗口（上例连锁售票系统）可下钻到按钮级 → 空子树是 Electron/UIA
+     暴露层面的问题，不是遍历器不下钻。

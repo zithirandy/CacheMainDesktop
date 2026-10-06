@@ -10,7 +10,12 @@ import {PhpBackend} from '../lib/backend.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 
-process.on('uncaughtException', () => process.exit(0));
+// An uncaught error means the check never ran (backend failed to start, fetch
+// failed). Exiting 0 there reported a broken environment as a passing layout.
+process.on('uncaughtException', error => {
+    console.error('check-layout: could not complete:', error?.message ?? error);
+    process.exit(1);
+});
 
 const backend = new PhpBackend({
     phpExe: path.join(ROOT, 'php', 'php.exe'),

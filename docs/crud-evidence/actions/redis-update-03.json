@@ -1,0 +1,10 @@
+[
+  {"nav": "http://127.0.0.1:60431/?dashboard=redis&server=3&form=edit&key=crud%3Aui%3Ahash01&hash_key=f1"},
+  {"wait": 1500},
+  {"readExpr": "JSON.stringify({key: document.querySelector('#key')?.value, hashKey: document.querySelector('#hash_key')?.value, value: document.querySelector('#value')?.value, type: document.querySelector('#rtype')?.value, hashKeyVisible: document.querySelector('#redis_hash_key')?.style.display})"},
+  {"set": {"sel": "#value", "val": "v1-UPDATED"}},
+  {"click": "#submit"},
+  {"wait": 2000},
+  {"readExpr": "JSON.stringify({after: location.search, rows: [...document.querySelectorAll('tbody tr')].map(tr=>tr.textContent.replace(/\\s+/g,' ').trim().slice(0,50))})"},
+  {"shot": "F:\\原E盘\\CacheMainDesktop-历史\\调试记录\\shots\\crud\\redis-15-hash-field-edit-result.png"}
+]

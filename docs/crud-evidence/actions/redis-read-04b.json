@@ -1,0 +1,14 @@
+[
+  {"nav": "http://127.0.0.1:60431/?dashboard=redis&server=3&view=key&key=crud:seed:hash"},
+  {"wait": 1500},
+  {"dumpText": true},
+  {"nav": "http://127.0.0.1:60431/?dashboard=redis&server=3&view=key&key=crud:seed:zset"},
+  {"wait": 1500},
+  {"dumpText": true},
+  {"nav": "http://127.0.0.1:60431/?dashboard=redis&server=3&view=key&key=crud:big:100k"},
+  {"wait": 1500},
+  {"dumpText": true},
+  {"nav": "http://127.0.0.1:60431/?dashboard=redis&server=3&view=key&key=crud:big:hash"},
+  {"wait": 1500},
+  {"dumpText": true}
+]

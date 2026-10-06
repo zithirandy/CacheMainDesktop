@@ -1,0 +1,12 @@
+cdp-form: target "Memcached - CacheMainDesktop" http://127.0.0.1:60431/?dashboard=memcached&server=2
+[0] readExpr JSON.stringify({allButtons: [...document.querySelectorAll('button')].map(b=>b.textContent.trim()||b. -> "{\"allButtons\":[\"Connections\",\"Import\",\"Key\",\"Size\",\"Last used\",\"TTL\",\"Close\",\"Import\"],\"allLinks\":[\"Keys\",\"Analysis\",\"Commands Stats\",\"Slabs\",\"Items\",\"Metrics\",\"Connections\",\"Watcher\",\"Console\",\"More info\",\"Add new\"]}"
+[1] nav -> http://127.0.0.1:60431/?dashboard=memcached&server=2&form=new
+[2] wait 1200ms
+[3] set #key -> "crud:mem:entersubmit"
+[4] set #value -> "via-enter"
+[5] readExpr (() => { const k = document.querySelector('#key'); k.dispatchEvent(new KeyboardEvent('keydown', {key -> "enter sent from #key"
+[6] wait 2000ms
+[7] readExpr JSON.stringify({afterEnter: location.search}) -> "{\"afterEnter\":\"?dashboard=memcached&server=2&form=new\"}"
+[8] nav -> http://127.0.0.1:60431/?dashboard=redis&server=3
+[9] wait 1500ms
+[10] readExpr JSON.stringify({redisSearchAria: document.querySelector('#search_key')?.getAttribute('aria-label')}) -> "{}"

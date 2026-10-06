@@ -105,3 +105,39 @@ export PCA_TEST_REDIS_PASSWORD=...
 export PCA_TEST_MC_HOST=...         # defaults to 127.0.0.1
 export PCA_TEST_BROWSER=...         # chromium path override (auto-detected otherwise)
 ```
+
+### Spinning up local test servers
+
+`docker-compose.test.yml` starts a throwaway Redis and Memcached for exactly
+this purpose. Both publish on `127.0.0.1` only and hold no persistent data:
+
+```bash
+docker compose -f docker-compose.test.yml up -d      # redis:6379, memcached:11211
+
+bash scripts/test-redis-seed.sh                      # 9 keys across all types
+python scripts/test-memcached-seed.py                # 5 keys + a TTL'd one
+node scripts/check-live-servers.mjs                  # drives the dashboard against both
+
+docker compose -f docker-compose.test.yml down       # throw it all away
+```
+
+The seed scripts exist so the dashboard has realistic data to render (sizes,
+type badges, TTLs, sub-items) instead of an empty key list. `check-live-servers.mjs`
+boots the bundled PHP backend, opens a real browser, and asserts the seeded keys
+actually appear on the Redis and Memcached panels.
+
+Notes from setting this up:
+
+- The compose file starts Redis **without** a password. To exercise the auth
+  path, run `docker compose -f docker-compose.test.yml exec redis redis-cli CONFIG SET requirepass localtest123`
+  and export `PCA_TEST_REDIS_PASSWORD=localtest123` before the seed/check scripts.
+  `CONFIG SET` is not persisted, so a restart returns to no-password.
+- `REDIS_ARGS` is **not** honoured by the official `redis:8-alpine` image (its
+  entrypoint execs `redis-server` directly), so extra flags must be passed as
+  the container command, as this compose file does.
+- Memcached runs with `-o track_sizes` so the per-item size distribution panel
+  has data. The flag is silent in `stats`; verify with `stats sizes` once a key
+  is stored.
+- `scripts/test-redis-seed.sh` is LF-only by design (see `.gitattributes`);
+  `core.autocrlf=true` would otherwise break its shebang outside Windows.
+

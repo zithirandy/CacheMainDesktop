@@ -1,0 +1,6 @@
+[
+  {"readText": "#status"},
+  {"click": "#save"},
+  {"wait": 5000},
+  {"readText": "#status"}
+]

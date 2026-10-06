@@ -1,0 +1,9 @@
+[
+  {"nav": "http://127.0.0.1:60431/?dashboard=redis&server=3&s=crud:ui:big100k"},
+  {"wait": 1200},
+  {"readExpr": "(() => { document.querySelectorAll('tbody tr .check-key').forEach(cb => { cb.checked = true; cb.dispatchEvent(new Event('change', {bubbles:true})); }); return 'checked ' + document.querySelectorAll('tbody tr .check-key:checked').length + ' rows: ' + [...document.querySelectorAll('tbody tr [data-key], tbody tr')].map(t=>t.getAttribute?.('data-key')).filter(Boolean).map(x=>atob(x)).join(', '); })()"},
+  {"nav": "http://127.0.0.1:60431/?dashboard=redis&server=3&s=crud:ui:expzero"},
+  {"wait": 1200},
+  {"readExpr": "(() => { document.querySelectorAll('tbody tr .check-key').forEach(cb => { cb.checked = true; cb.dispatchEvent(new Event('change', {bubbles:true})); }); return 'now checked ' + document.querySelectorAll('tbody tr .check-key:checked').length; })()"},
+  {"readExpr": "JSON.stringify({server: document.querySelector('#server_select')?.selectedOptions[0]?.text, db: document.querySelector('#db_select')?.selectedOptions[0]?.text})"}
+]

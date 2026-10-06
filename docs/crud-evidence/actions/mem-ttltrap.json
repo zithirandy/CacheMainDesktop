@@ -1,0 +1,16 @@
+[
+  {"nav": "http://127.0.0.1:60431/?dashboard=memcached&server=2&form=new"},
+  {"wait": 1000},
+  {"set": {"sel": "#key", "val": "crud:mem:ttltrap"}},
+  {"set": {"sel": "#expire", "val": "600"}},
+  {"set": {"sel": "#value", "val": "has-ttl"}},
+  {"click": "#submit"},
+  {"wait": 2000},
+  {"nav": "http://127.0.0.1:60431/?dashboard=memcached&server=2&form=edit&key=crud%3Amem%3Attltrap"},
+  {"wait": 1500},
+  {"readExpr": "JSON.stringify({expirePrefill: document.querySelector('#expire')?.value})"},
+  {"set": {"sel": "#value", "val": "edited-value-only"}},
+  {"click": "#submit"},
+  {"wait": 2000},
+  {"readExpr": "JSON.stringify({after: location.search})"}
+]

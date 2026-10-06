@@ -1,0 +1,57 @@
+界面状态验证（2026-10-06 更正轮，任务 C）
+==========================================
+目标：验证侧边栏三个导航项（Server/Redis/Memcached）是否为可交互元素、左下
+Connections 按钮是否存在、服务器下拉框当前选中值。
+
+一、windows-mcp Snapshot 无障碍树读到的事实
+----------------------------------------------------
+读到的：主窗口与 Connections 编辑窗以命名窗口节点出现（标题分别为
+"Redis - CacheMainDesktop" 与 "Connections"，见 mcp-snapshot-cachemaindesktop.txt）。
+没读到的：**三个导航项、Connections 按钮、下拉框——全部读不到**。两个窗口的
+UIA 子树为空（Electron 默认不向 UIA 暴露渲染内容）。加
+--force-renderer-accessibility 硬重启后复测：仍然读不到（阴性结果）。
+=> OS 级元素树在本应用上无法完成界面状态核验，此为工具边界，非界面缺陷。
+
+二、CDP 补充读取的界面事实（重启前，scripts/ui-dump.mjs 原文整理；
+   与上轮同一运行实例，页面 http://127.0.0.1:57391/?dashboard=redis&server=2）
+----------------------------------------------------
+1) 侧边栏导航（均为 <a> 可交互元素，逐字）：
+       Server      -> href="?dashboard=server"
+       Redis       -> href="?dashboard=redis&server=2"
+       Memcached   -> href="?dashboard=memcached"
+   （另有 phpCacheAdmin 官方链接及面板内 Keys/Analysis/Slow Log 等标签链接，
+     全量见临时原文；key 名与上轮 Redis 库真值一致：tags:prod、queue:tasks、
+     user:1、greeting、app:config、counter、leaderboard——共 7 个。）
+2) 左下 Connections 按钮：存在。
+       <button id="pca-open-connections">，矩形 (x=16, y=683, w=216, h=38)，
+       所在容器 class 含 "pca-sidebar"（w-60 侧栏），同容器内即上述导航链接。
+   注意：上轮 tools/cdp.mjs 文档示例用的 [data-pca-connections] 选择器在当前
+   构建中已不匹配（DOM 里无该属性），实际 id 为 pca-open-connections。
+3) 服务器下拉框 #server_select：selectedIndex = 2，选中
+       「本地 Redis - 127.0.0.1:6379」（测试新增连接，无保密问题）
+   全部选项 3 项：Local Redis - 127.0.0.1:6379 / [既有连接，host 已脱敏] /
+   本地 Redis - 127.0.0.1:6379。（既有 LAN 连接的 host:port 按保密要求脱敏。）
+4) 其他佐证：#db_select 显示「Database 0 (7 keys)」；#per_page=50。
+5) Connections 编辑窗（file:// ui/connections.html）：按钮 New / Cancel /
+   Apply / Save & Apply；类型下拉 f-type selectedIndex=1（Memcached，即上轮
+   最后编辑的「本地 Memcached」）。
+
+三、a11y 硬重启后的应用健康核验（scripts/restart-app-a11y.ps1 流程）
+----------------------------------------------------
+- 新实例 pid 66684，MainWindowTitle = "Server - CacheMainDesktop"，Responding=True；
+  DevTools 19233 端口 HTTP 200（/json/version 原文与上轮一致：Electron 44.4.5 /
+  Chromium 152.0.7977.130）。
+- connections.json 经 check-connections.mjs 复核：共 5 条（既有 3 + 上轮新增
+  本地 Redis / 本地 Memcached），硬重启未影响数据。
+- php 后端第 4 次变迁：pid 57104，端口 58397（56215→52133→57391→58397），
+  命令行 `-S 127.0.0.1:58397 -t ...\resources\webapp`（PS 控制台回显中文路径
+  乱码为代码页渲染问题，不影响实际运行）。
+- 重启后当前界面截图：server-dashboard-a11y-restart.png（CDP 内容区裁剪，
+  侧边栏整体裁除，无 host:port）。
+
+四、来源标注
+----------------------------------------------------
+- 「读不到」与两次窗口枚举：windows-mcp Snapshot 原文（本轮第一手）。
+- 二节界面事实：CDP（Runtime.evaluate），脚本留档 ui-dump.mjs /
+  shot-content.mjs；CDP 为任务书指定的截图/界面读取替代路径，非 OS 级
+  computer-use，结论均按此口径标注。

@@ -1,0 +1,53 @@
+CacheMainDesktop 验收测试 — 能力探测原始结果
+探测时间：2026-10-06（本会话）
+探测人：验收测试 agent
+
+================================================================
+一、mcp__windows-mcp__Snapshot
+================================================================
+结论：未执行（未验证）。
+原因：windows-mcp 服务器未在本会话配置，工具不可调用。
+原始证据（WaitForMcpServers 定向探测，逐字）：
+  ready: false
+  Unknown (no MCP server with this name is configured): windows-mcp
+（另一次不带参数的探测返回的失败列表中也无 windows-mcp：
+  discord, fiftyone, firebase, github, laravel-boost, prisma,
+  zoom 系列 —— 即该服务器不是"连接失败"，而是根本未配置。）
+
+================================================================
+二、mcp__windows-mcp__Screenshot
+================================================================
+结论：未执行（未验证）——原因同一。
+补充的等价探测（第一手执行）：PowerShell GDI CopyFromScreen，
+脚本 scripts/probe-env.ps1，输出 probe-env.txt。失败原文：
+  CopyFromScreen FAILED (original message): 使用"5"个参数调用
+  "CopyFromScreen"时发生异常:"句柄无效。"
+  Exception type: System.Management.Automation.MethodInvocationException
+即 GDI 屏幕抓取报「句柄无效」，与「断开/未合成桌面会话」的特征一致。
+结论：本会话中屏幕级截屏不可用（独立复现，非转述）。
+
+================================================================
+三、mcp__windows-mcp__DisplayInventory
+================================================================
+结论：未执行（未验证）——原因同一。
+等价探测（PowerShell SystemInformation，第一手执行）：
+  Screen \\.\DISPLAY65: 1440x900 at (0,0) Primary=True
+  VirtualScreen: X=0 Y=0 W=1440 H=900
+即单显示器 1440x900，主屏。
+
+================================================================
+四、操作系统信息（等价采集）
+================================================================
+  Caption: Microsoft Windows 11 专业版
+  Version: 10.0.26200 Build 26200
+
+================================================================
+五、对测试方法的推论
+================================================================
+- 所有 mcp__windows-mcp__* 操作（Snapshot/Screenshot/DisplayInventory/
+  PowerShell/App/Click/Type）在本会话均无法调用，相关步骤全部降级：
+  * 系统操作（启动进程、查进程树、读文件）→ Bash 调 PowerShell 脚本；
+  * 界面操作与截图 → DevTools 协议（node tools/cdp.mjs 及为本次测试
+    新增的 tools/cdp-form.mjs），作用于应用真实窗口的 DOM。
+- 屏幕级截图（GDI）已由本机第一手证据确认不可用；本次所有截图改走
+  渲染管线级 CDP Page.captureScreenshot。

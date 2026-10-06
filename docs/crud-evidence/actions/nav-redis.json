@@ -1,0 +1,4 @@
+[
+  {"nav": "http://127.0.0.1:60431/?dashboard=redis"},
+  {"wait": 1500}
+]

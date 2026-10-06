@@ -1,0 +1,6 @@
+[
+  {"readExpr": "({innerW: window.innerWidth, innerH: window.innerHeight})"},
+  {"readExpr": "(() => { const a = document.querySelector('aside.pca-sidebar'); const r = a ? a.getBoundingClientRect() : null; return r ? {sidebarX: r.x, sidebarRight: r.right, sidebarW: r.width} : 'no aside.pca-sidebar'; })()"},
+  {"readExpr": "document.querySelector('main') ? document.querySelector('main').className : 'no <main>'"},
+  {"readExpr": "(() => { const m = document.querySelector('.pca-content, .pca-page, main'); return m ? {sel: m.className, rect: (r => ({x: r.x, y: r.y, w: r.width, h: r.height}))(m.getBoundingClientRect())} : 'none found'; })()"}
+]

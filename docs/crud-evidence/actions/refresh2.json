@@ -1,0 +1,3 @@
+[
+  {"readExpr": "JSON.stringify({uptime: (document.body.innerText.match(/Uptime[\\s\\S]{0,50}/)||[''])[0].replace(/[\\r\\n]+/g,' ')})"}
+]

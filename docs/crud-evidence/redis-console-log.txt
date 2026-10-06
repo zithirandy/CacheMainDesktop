@@ -1,0 +1,34 @@
+cdp-form: target "Redis - CacheMainDesktop" http://127.0.0.1:60431/?dashboard=redis&server=3&console=1
+[0] nav -> http://127.0.0.1:60431/?dashboard=redis&server=3
+[1] wait 1500ms
+[2] readExpr JSON.stringify({consoleInput: !!document.querySelector('#console_input'), consoleTabHref: [...docume -> "{\"consoleInput\":false,\"consoleTabHref\":\"?dashboard=redis&server=3&tab=console\"}"
+[3] click #console_input -> not found
+file:///F:/%E5%8E%9FE%E7%9B%98/CacheMainDesktop/tools/cdp-form.mjs:94
+        throw new Error(result.exceptionDetails.exception?.description ?? 'evaluate failed');
+              ^
+
+Error: TypeError: Cannot set properties of null (setting 'value')
+    at <anonymous>:1:70
+    at <anonymous>:1:160
+    at evaluate (file:///F:/%E5%8E%9FE%E7%9B%98/CacheMainDesktop/tools/cdp-form.mjs:94:15)
+    at async file:///F:/%E5%8E%9FE%E7%9B%98/CacheMainDesktop/tools/cdp-form.mjs:145:23
+
+Node.js v24.18.0
+cdp-form: target "Redis - CacheMainDesktop" http://127.0.0.1:60431/?dashboard=redis&server=3
+[0] nav -> http://127.0.0.1:60431/?dashboard=redis&server=3&tab=console
+[1] wait 1500ms
+[2] readExpr JSON.stringify({consoleInput: !!document.querySelector('#console_input'), consoleTabHref: [...docume -> "{\"consoleInput\":true,\"consoleTabHref\":\"?dashboard=redis&server=3&tab=console\",\"welcome\":\"Type a Redis command and press Enter (e.g. PING,\\n        SET foo bar, KEYS *).\\n \"}"
+[3] click #console_input -> clicked
+[4] readExpr (() => { const i = document.querySelector('#console_input'); i.value = 'dbsize'; i.dispatchEvent(new -> "typed dbsize"
+[5] readExpr (() => { const i = document.querySelector('#console_input'); i.dispatchEvent(new KeyboardEvent('keyd -> "enter sent"
+[6] wait 2000ms
+[7] readExpr JSON.stringify({consoleText: document.querySelector('#console')?.innerText.replace(/\s+/g,' ').trim( -> "{\"consoleText\":\"Type a Redis command and press Enter (e.g. PING, SET foo bar, KEYS *). Type clear to reset the output. redis:0> dbsize (integer) 80 redis:0>\"}"
+[8] shot -> F:\原E盘\CacheMainDesktop-历史\调试记录\shots\crud\redis-16-console-dbsize.png
+cdp-form: target "Redis - CacheMainDesktop" http://127.0.0.1:60431/?dashboard=redis&server=3&tab=console
+[0] readExpr (() => { const i = document.querySelector('#console_input'); i.value = 'MONITOR'; i.dispatchEvent(ne -> "monitor sent"
+[1] wait 1500ms
+[2] readExpr JSON.stringify({afterMonitor: document.querySelector('#console')?.innerText.replace(/\s+/g,' ').trim -> "{\"afterMonitor\":\"Type a Redis command and press Enter (e.g. PING, SET foo bar, KEYS *). Type clear to reset the output. redis:0> dbsize (integer) 80 redis:0> MONITOR (error) Command \\\"MONITOR\\\" is not allowed in the console. Open the Profiler tab → redis:0>\"}"
+[3] readExpr (() => { const i = document.querySelector('#console_input'); i.value = ''; i.dispatchEvent(new Keybo -> "arrowup -> \"MONITOR\""
+[4] wait 500ms
+[5] readExpr JSON.stringify({historyRecall: document.querySelector('#console_input')?.value}) -> "{\"historyRecall\":\"MONITOR\"}"
+[6] shot -> F:\原E盘\CacheMainDesktop-历史\调试记录\shots\crud\redis-17-console-monitor-history.png

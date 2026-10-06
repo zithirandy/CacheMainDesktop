@@ -1,0 +1,9 @@
+[
+  {"nav": "http://127.0.0.1:60431/?dashboard=memcached&server=2&tab=console"},
+  {"wait": 1500},
+  {"readExpr": "JSON.stringify({server: document.querySelector('#server_select')?.selectedOptions[0]?.text, welcome: document.querySelector('#console_welcome')?.textContent.trim().slice(0,60)})"},
+  {"readExpr": "(() => { const i = document.querySelector('#console_input'); i.value = 'version'; i.dispatchEvent(new Event('input',{bubbles:true})); i.dispatchEvent(new KeyboardEvent('keydown',{key:'Enter',bubbles:true})); return 'sent'; })()"},
+  {"wait": 1500},
+  {"readExpr": "JSON.stringify({out: document.querySelector('#console')?.innerText.replace(/[\\r\\n]+/g,' | ').trim().slice(-160)})"},
+  {"shot": "F:\\原E盘\\CacheMainDesktop-历史\\调试记录\\shots\\crud\\memcached-04-console.png"}
+]

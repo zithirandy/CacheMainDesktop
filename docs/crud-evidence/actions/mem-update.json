@@ -1,0 +1,17 @@
+[
+  {"nav": "http://127.0.0.1:60431/?dashboard=memcached&server=2&form=edit&key=crud%3Amem%3Astr1"},
+  {"wait": 1500},
+  {"readExpr": "JSON.stringify({server: document.querySelector('#server_select')?.selectedOptions[0]?.text, key: document.querySelector('#key')?.value, value: document.querySelector('#value')?.value, oldKey: document.querySelector('[name=old_key]')?.value})"},
+  {"set": {"sel": "#value", "val": "mem-ui-UPDATED"}},
+  {"click": "#submit"},
+  {"wait": 2000},
+  {"readExpr": "JSON.stringify({afterEdit: location.search})"},
+
+  {"nav": "http://127.0.0.1:60431/?dashboard=memcached&server=2&form=edit&key=crud%3Amem%3Attl120"},
+  {"wait": 1500},
+  {"readExpr": "JSON.stringify({ttlKeyExpirePrefill: document.querySelector('#expire')?.value})"},
+  {"set": {"sel": "#expire", "val": "300"}},
+  {"click": "#submit"},
+  {"wait": 2000},
+  {"readExpr": "JSON.stringify({afterTtl: location.search})"}
+]

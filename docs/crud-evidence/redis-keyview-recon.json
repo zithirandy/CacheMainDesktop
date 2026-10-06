@@ -1,0 +1,203 @@
+{
+  "url": "http://127.0.0.1:60431/?dashboard=redis&server=3&view=key&key=crud:bulk:ttl:long",
+  "title": "Redis - CacheMainDesktop",
+  "sidebarNav": [
+    {
+      "text": "Server",
+      "href": "?dashboard=server"
+    },
+    {
+      "text": "Redis",
+      "href": "?dashboard=redis&server=3"
+    },
+    {
+      "text": "Memcached",
+      "href": "?dashboard=memcached"
+    },
+    {
+      "text": "phpCacheAdmin",
+      "href": "https://github.com/RobiNN1/phpCacheAdmin"
+    }
+  ],
+  "tabs": [],
+  "buttons": [
+    {
+      "text": "Connections",
+      "id": "pca-open-connections",
+      "name": null,
+      "type": "button",
+      "cls": "gap-2 items-center px-3 py-2 w-full text-sm font-m"
+    },
+    {
+      "text": "",
+      "id": null,
+      "name": null,
+      "type": "button",
+      "cls": "flex flex-1 justify-center items-center py-1.5 tex"
+    },
+    {
+      "text": "",
+      "id": null,
+      "name": null,
+      "type": "button",
+      "cls": "flex flex-1 justify-center items-center py-1.5 tex"
+    },
+    {
+      "text": "",
+      "id": null,
+      "name": null,
+      "type": "button",
+      "cls": "flex flex-1 justify-center items-center py-1.5 tex"
+    },
+    {
+      "text": "Delete",
+      "id": null,
+      "name": "delete",
+      "type": "submit",
+      "cls": "inline-flex gap-1 items-center font-semibold text-"
+    }
+  ],
+  "selects": [
+    {
+      "id": "server_select",
+      "name": "server_select",
+      "selected": "CRUD 测试 Redis - 127.0.0.1:6379",
+      "options": [
+        "Local Redis - 127.0.0.1:6379",
+        "Redis_122 - [REDACTED-LAN]:6379",
+        "本地 Redis - 127.0.0.1:6379",
+        "CRUD 测试 Redis - 127.0.0.1:6379"
+      ]
+    },
+    {
+      "id": "db_select",
+      "name": "db_select",
+      "selected": "Database 9 (69 keys)",
+      "options": [
+        "Database 0 (7 keys)",
+        "Database 1",
+        "Database 2",
+        "Database 3",
+        "Database 4",
+        "Database 5",
+        "Database 6",
+        "Database 7",
+        "Database 8",
+        "Database 9 (69 keys)",
+        "Database 10",
+        "Database 11",
+        "Database 12",
+        "Database 13",
+        "Database 14",
+        "Database 15"
+      ]
+    }
+  ],
+  "inputs": [
+    {
+      "tag": "input",
+      "id": null,
+      "name": "csrf_token",
+      "type": "hidden",
+      "placeholder": null,
+      "value": "b5b67dbd94b815dbcdbd7b0bcc733efe617789ef87fa68dec387a465c765"
+    }
+  ],
+  "links": [
+    {
+      "text": "Server",
+      "href": "?dashboard=server"
+    },
+    {
+      "text": "Redis",
+      "href": "?dashboard=redis&server=3"
+    },
+    {
+      "text": "Memcached",
+      "href": "?dashboard=memcached"
+    },
+    {
+      "text": "phpCacheAdmin",
+      "href": "https://github.com/RobiNN1/phpCacheAdmin"
+    },
+    {
+      "text": "Keys",
+      "href": "?dashboard=redis&server=3&tab=keys"
+    },
+    {
+      "text": "Analysis",
+      "href": "?dashboard=redis&server=3&tab=analysis"
+    },
+    {
+      "text": "Slow Log",
+      "href": "?dashboard=redis&server=3&tab=slowlog"
+    },
+    {
+      "text": "Latency",
+      "href": "?dashboard=redis&server=3&tab=latency"
+    },
+    {
+      "text": "Metrics",
+      "href": "?dashboard=redis&server=3&tab=metrics"
+    },
+    {
+      "text": "Clients",
+      "href": "?dashboard=redis&server=3&tab=clients"
+    },
+    {
+      "text": "Pub/Sub",
+      "href": "?dashboard=redis&server=3&tab=pubsub"
+    },
+    {
+      "text": "Profiler",
+      "href": "?dashboard=redis&server=3&tab=profiler"
+    },
+    {
+      "text": "Console",
+      "href": "?dashboard=redis&server=3&tab=console"
+    },
+    {
+      "text": "More info",
+      "href": "?dashboard=redis&server=3&tab=moreinfo"
+    },
+    {
+      "text": "Export",
+      "href": "?dashboard=redis&server=3&view=key&key=crud%3Abulk%3Attl%3Along&export=key"
+    },
+    {
+      "text": "Edit",
+      "href": "?dashboard=redis&server=3&form=edit&key=crud%3Abulk%3Attl%3Along"
+    },
+    {
+      "text": "Formatted",
+      "href": "?dashboard=redis&server=3&view=key&key=crud%3Abulk%3Attl%3Along&value_mode=formatted"
+    },
+    {
+      "text": "Raw",
+      "href": "?dashboard=redis&server=3&view=key&key=crud%3Abulk%3Attl%3Along&value_mode=raw"
+    },
+    {
+      "text": "Hex",
+      "href": "?dashboard=redis&server=3&view=key&key=crud%3Abulk%3Attl%3Along&value_mode=hex"
+    }
+  ],
+  "tables": [],
+  "forms": [
+    {
+      "id": null,
+      "action": "?dashboard=redis&server=3&view=key&key=crud%3Abulk%3Attl%3Along",
+      "method": "POST",
+      "fields": [
+        "csrf_token"
+      ]
+    }
+  ],
+  "keyRows": [],
+  "headings": [
+    "Server",
+    "Memory",
+    "Stats"
+  ],
+  "statusText": "",
+  "alerts": []
+}

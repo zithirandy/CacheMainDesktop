@@ -1,0 +1,63 @@
+# Local Redis + Memcached for testing this project.
+#
+#   docker compose -f docker-compose.test.yml up -d
+#   bash scripts/test-redis-seed.sh                 # put keys into redis
+#   python scripts/test-memcached-seed.py           # put keys into memcached
+#   node scripts/check-live-servers.mjs             # drive the dashboard against both
+#
+#   docker compose -f docker-compose.test.yml down  # stop (keeps nothing)
+#
+# Both ports are published on 127.0.0.1 only: these servers are deliberately
+# unauthenticated test fixtures, and phpCacheAdmin's own guidance is to never
+# expose an unauthenticated cache instance beyond loopback. The credentials the
+# check script uses come from PCA_TEST_* environment variables, so nothing
+# secret belongs in this file.
+#
+# If you want to exercise the password path, run instead:
+#     docker compose -f docker-compose.test.yml up -d
+#     docker compose -f docker-compose.test.yml exec redis \
+#         redis-cli CONFIG SET requirepass localtest123
+# and export PCA_TEST_REDIS_PASSWORD=localtest123 before the check script.
+# (CONFIG SET is not persisted, so a restart returns to no-password.)
+
+name: cachemaindesktop-test
+
+services:
+  redis:
+    image: redis:8-alpine
+    container_name: cmd-test-redis
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:6379:6379"
+    # A small, disposable instance: cap memory so a runaway test cannot eat the
+    # host, and keep it in-memory only (no RDB/AOF files to clean up).
+    command:
+      - redis-server
+      - --save
+      - ""
+      - --appendonly
+      - "no"
+      - --maxmemory
+      - 128mb
+      - --maxmemory-policy
+      - allkeys-lru
+    healthcheck:
+      test: ["CMD", "redis-cli", "PING"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  memcached:
+    image: memcached:alpine
+    container_name: cmd-test-memcached
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:11211:11211"
+    # -o track_sizes makes the dashboard's per-item size distribution work.
+    # It is silent in `stats`; verify with `stats sizes` after storing a key.
+    command: ["-m", "64", "-o", "track_sizes"]
+    healthcheck:
+      test: ["CMD-SHELL", "printf 'version\r\n' | nc -w1 127.0.0.1 11211 | grep -q VERSION"]
+      interval: 5s
+      timeout: 3s
+      retries: 10

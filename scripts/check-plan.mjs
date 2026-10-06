@@ -25,8 +25,8 @@ process.on('uncaughtException', error => {
 });
 
 const failures = [];
-const check = (name, ok) => {
-    console.log(`${ok ? 'ok  ' : 'FAIL'} ${name}`);
+const check = (name, ok, detail = '') => {
+    console.log(`${ok ? 'ok  ' : 'FAIL'} ${name}${!ok && detail ? `\n      ${detail}` : ''}`);
     failures.push(...(ok ? [] : [name]));
 };
 
@@ -49,10 +49,42 @@ const url = await backend.start();
 const mcPage = await fetch(`${url}/?dashboard=memcached`).then(r => r.text());
 
 check('memcached: no "57 years ago"', !mcPage.includes('57 years ago'));
-check('memcached: shows Never for never-accessed keys', mcPage.includes('Never'));
+
+// The Last used column must be a formatted relative time (or "Never" for a key
+// whose last-access stamp is 0). Asserting "Never" specifically was wrong: these
+// fixture keys are written moments before the check, so their `la` is a fresh
+// epoch, and the assertion only passed if the seed happened to leave la=0.
+// What is worth guarding is that the formatter ran at all - a raw epoch leaking
+// through is the regression this column has had before.
+const lastUsedCell = mcPage.match(/<td[^>]*>\s*([^<]*ago|Never|less than a minute)\s*<\/td>/i);
+
+check(
+    'memcached: Last used renders "Never" or a relative time',
+    mcPage.includes('Never') || /\b\d+\s+(second|minute|hour|day|month|year)s?\s+ago\b/.test(mcPage)
+        || mcPage.includes('less than a minute'),
+    // Keep the evidence: this failed once and the reason was not recorded.
+    `lastUsedCell=${JSON.stringify(lastUsedCell?.[1]?.trim() ?? null)}`
+);
 check('memcached: panel says Server version', mcPage.includes('Server version'));
 check('memcached: panel separates Client (PHPMem)', mcPage.includes('PHPMem'));
-check('memcached: no fake 0.00B sizes', !mcPage.includes('0.00B') && !mcPage.includes('0,00B'));
+// The Size column must not show a fabricated 0.00B for a key whose size is
+// unknown ("n/a" is the documented behaviour on the text-protocol path).
+//
+// This failed once during a full verify-all run and has not reproduced since
+// (25 direct page fetches, several full-suite runs, and both size code paths in
+// MemcachedKeysList.php verified to guard with 'n/a'). Since the cause is still
+// unknown, the assertion now carries its evidence: if it fires again, the
+// snippet says which element produced it instead of leaving a bare FAIL.
+const zeroSizeIndex = Math.max(mcPage.indexOf('0.00B'), mcPage.indexOf('0,00B'));
+const zeroSizeSnippet = zeroSizeIndex === -1
+    ? null
+    : mcPage.slice(Math.max(0, zeroSizeIndex - 220), zeroSizeIndex + 80).replace(/\s+/g, ' ');
+
+check(
+    'memcached: no fake 0.00B sizes',
+    zeroSizeIndex === -1,
+    zeroSizeSnippet ? `context: ...${zeroSizeSnippet}...` : ''
+);
 check('memcached: no "0 max" connections', !mcPage.includes('/ 0 max'));
 check('delete-all button present (confirm handled by scripts.js)', mcPage.includes('id="delete_all"'));
 

@@ -11,7 +11,14 @@ import {PhpBackend} from '../lib/backend.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 
-process.on('uncaughtException', () => process.exit(0));
+// Nothing here is expected to throw, so an uncaught error means the check could
+// not run (the backend failed to start, say). Reporting that as success is how
+// this script used to pass while the bundled PHP was completely broken - fail
+// loudly instead.
+process.on('uncaughtException', error => {
+    console.error('check-ini-path: could not complete:', error?.message ?? error);
+    process.exit(1);
+});
 
 const backend = new PhpBackend({
     phpExe: path.join(ROOT, 'php', 'php.exe'),

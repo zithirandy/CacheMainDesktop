@@ -1,0 +1,249 @@
+cdp-form: target "Redis - CacheMainDesktop" http://127.0.0.1:60431/?dashboard=redis&server=3&view=tree
+[0] nav -> http://127.0.0.1:60431/?dashboard=redis&server=3&form=new
+[1] wait 1500ms
+[2] readExpr JSON.stringify({server: document.querySelector('#server_select')?.selectedOptions[0]?.text, db: docu -> "{\"server\":\"CRUD 测试 Redis - 127.0.0.1:6379\",\"db\":\"Database 9 (69 keys)\"}"
+[3] --- body.innerText start ---
+CacheMain
+Desktop
+Server
+Redis
+Memcached
+SERVER
+Local Redis - 127.0.0.1:6379
+Redis_122 - [REDACTED-LAN]:6379
+本地 Redis - 127.0.0.1:6379
+CRUD 测试 Redis - 127.0.0.1:6379
+Connections
+v2.7.2
+·
+phpCacheAdmin
+Keys
+Analysis
+Slow Log
+Latency
+Metrics
+Clients
+Pub/Sub
+Profiler
+Console
+More info
+Type
+String
+Set
+List
+Zset
+Hash
+Stream
+Vectorset
+Json
+Key
+Expire (in seconds)
+ -1 removes expiration (default).
+Encode function
+gzcompress
+gzencode
+gzdeflate
+zlib
+none
+Value
+Save key
+Database 0 (7 keys)
+Database 1
+Database 2
+Database 3
+Database 4
+Database 5
+Database 6
+Database 7
+Database 8
+Database 9 (69 keys)
+Database 10
+Database 11
+Database 12
+Database 13
+Database 14
+Database 15
+Server
+Server version
+8.10.2, standalone mode
+Client
+Predis v3.6.1
+Cluster
+Disabled
+Uptime
+11 hours 43 minutes
+Role
+master, connected slaves 0
+Keys
+76 (all databases)
+Hits / Misses
+1,391 / 9 (99.36%)
+Memory
+Total
+128.0MB
+Used
+2.28MB (1.78%)
+Free
+125.72MB
+Peak memory usage
+2.28MB
+Fragmentation ratio
+9.90
+Lua memory usage
+44.00KB
+Stats
+Connected clients
+1 / 10,000
+Blocked clients
+0
+Total connections received
+8,605
+Total commands processed
+11,988
+Instantaneous ops per second
+7
+[3] --- body.innerText end ---
+cdp-form: target "Redis - CacheMainDesktop" http://127.0.0.1:60431/?dashboard=redis&server=3&form=new
+[0] nav -> http://127.0.0.1:60431/?dashboard=redis&server=3&form=new
+[1] wait 1200ms
+[2] readExpr JSON.stringify({server: document.querySelector('#server_select')?.selectedOptions[0]?.text, db: docu -> "{\"server\":\"CRUD 测试 Redis - 127.0.0.1:6379\",\"db\":\"Database 9 (69 keys)\"}"
+[3] set #key -> "crud:ui:string01"
+[4] set #value -> "hello-ui-create"
+[5] shot -> F:\原E盘\CacheMainDesktop-历史\调试记录\shots\crud\redis-08-create-string-form.png
+[6] click #submit -> clicked
+[7] wait 2000ms
+[8] readExpr JSON.stringify({afterUrl: location.search, alert: [...document.querySelectorAll('.alert, [role=alert -> "{\"afterUrl\":\"?dashboard=redis&server=3&view=key&key=crud%3Aui%3Astring01\",\"alert\":[],\"heading\":[\"Server\",\"Memory\"]}"
+[9] shot -> F:\原E盘\CacheMainDesktop-历史\调试记录\shots\crud\redis-09-create-string-result.png
+cdp-form: target "Redis - CacheMainDesktop" http://127.0.0.1:60431/?dashboard=redis&server=3&view=key&key=crud%3Aui%3Astring01
+[0] nav -> http://127.0.0.1:60431/?dashboard=redis&server=3&form=new
+[1] wait 1200ms
+[2] readExpr JSON.stringify({rtypeValues: [...document.querySelectorAll('[name=rtype]')].map(r=>r.value), hashKey -> "{\"rtypeValues\":[\"string\"],\"hashKeyVisibleDefault\":false,\"scoreVisibleDefault\":false}"
+[3] click [name=rtype][value=hash] -> not found
+[4] wait 600ms
+[5] readExpr JSON.stringify({hashKeyVisibleAfter: !!document.querySelector('#hash_key')?.offsetParent, hashExpire -> "{\"hashKeyVisibleAfter\":false,\"hashExpireVisible\":false}"
+[6] set #key -> "crud:ui:hash01"
+[7] set #hash_key -> "f1"
+[8] set #value -> "v1"
+[9] shot -> F:\原E盘\CacheMainDesktop-历史\调试记录\shots\crud\redis-10-create-hash-form.png
+[10] click #submit -> clicked
+[11] wait 2000ms
+[12] readExpr JSON.stringify({afterUrl: location.search, rows: [...document.querySelectorAll('tbody tr')].map(tr=> -> "{\"afterUrl\":\"?dashboard=redis&server=3&view=key&key=crud%3Aui%3Ahash01\",\"rows\":[]}"
+cdp-form: target "Redis - CacheMainDesktop" http://127.0.0.1:60431/?dashboard=redis&server=3&view=key&key=crud%3Aui%3Ahash01
+[0] nav -> http://127.0.0.1:60431/?dashboard=redis&server=3&form=new
+[1] wait 1200ms
+[2] set #rtype -> "hash"
+[3] readExpr JSON.stringify({hashKeyVisible: !!document.querySelector('#redis_hash_key') && document.querySelecto -> "{\"hashKeyVisible\":true,\"hashKeyRequired\":true,\"server\":\"CRUD 测试 Redis - 127.0.0.1:6379\"}"
+[4] set #key -> "crud:ui:hash01"
+[5] set #hash_key -> "f1"
+[6] set #value -> "v1"
+[7] click #submit -> clicked
+[8] wait 2000ms
+[9] readExpr JSON.stringify({afterUrl: location.search, rows: [...document.querySelectorAll('tbody tr')].map(tr=> -> "{\"afterUrl\":\"?dashboard=redis&server=3&view=key&key=crud%3Aui%3Ahash01\",\"rows\":[]}"
+[10] nav -> http://127.0.0.1:60431/?dashboard=redis&server=3&form=new
+[11] wait 1000ms
+[12] set #rtype -> "zset"
+[13] set #key -> "crud:ui:zset01"
+[14] set #score -> "42.5"
+[15] set #value -> "member-alpha"
+[16] click #submit -> clicked
+[17] wait 2000ms
+[18] readExpr JSON.stringify({zsetUrl: location.search, rows: [...document.querySelectorAll('tbody tr')].map(tr=>t -> "{\"zsetUrl\":\"?dashboard=redis&server=3&form=new\",\"rows\":[]}"
+[19] nav -> http://127.0.0.1:60431/?dashboard=redis&server=3&form=new
+[20] wait 1000ms
+[21] set #rtype -> "list"
+[22] set #key -> "crud:ui:list01"
+[23] set #value -> "task-first"
+[24] click #submit -> clicked
+[25] wait 2000ms
+[26] readExpr JSON.stringify({listUrl: location.search}) -> "{\"listUrl\":\"?dashboard=redis&server=3&view=key&key=crud%3Aui%3Alist01\"}"
+[27] nav -> http://127.0.0.1:60431/?dashboard=redis&server=3&form=new
+[28] wait 1000ms
+[29] set #rtype -> "set"
+[30] set #key -> "crud:ui:set01"
+[31] set #value -> "tag-one"
+[32] click #submit -> clicked
+[33] wait 2000ms
+[34] readExpr JSON.stringify({setUrl: location.search}) -> "{\"setUrl\":\"?dashboard=redis&server=3&view=key&key=crud%3Aui%3Aset01\"}"
+cdp-form: target "Redis - CacheMainDesktop" http://127.0.0.1:60431/?dashboard=redis&server=3&view=key&key=crud%3Aui%3Aset01
+[0] nav -> http://127.0.0.1:60431/?dashboard=redis&server=3&form=new
+[1] wait 1200ms
+[2] set #rtype -> "zset"
+[3] set #key -> "crud:ui:zset01"
+[4] set #score -> "42.5"
+[5] set #value -> "member-alpha"
+[6] readExpr JSON.stringify({scoreValid: document.querySelector('#score').checkValidity(), scoreMsg: document.que -> "{\"scoreValid\":false,\"scoreMsg\":\"请输入有效值。两个最接近的有效值分别为42和43。\",\"formValid\":false}"
+[7] shot -> F:\原E盘\CacheMainDesktop-历史\调试记录\shots\crud\redis-11-create-zset-float-blocked.png
+[8] set #score -> "42"
+[9] readExpr JSON.stringify({scoreValidInt: document.querySelector('#score').checkValidity()}) -> "{\"scoreValidInt\":true}"
+[10] click #submit -> clicked
+[11] wait 2000ms
+[12] readExpr JSON.stringify({zsetUrl: location.search}) -> "{\"zsetUrl\":\"?dashboard=redis&server=3&view=key&key=crud%3Aui%3Azset01\"}"
+cdp-form: target "Redis - CacheMainDesktop" http://127.0.0.1:60431/?dashboard=redis&server=3&view=key&key=crud%3Aui%3Azset01
+[0] nav -> http://127.0.0.1:60431/?dashboard=redis&server=3&form=new
+[1] wait 1200ms
+[2] set #value -> "val-for-empty-key-test"
+[3] readExpr JSON.stringify({keyRequired: document.querySelector('#key').required, keyValid: document.querySelect -> "{\"keyRequired\":true,\"keyValid\":false,\"keyMsg\":\"请填写此字段。\",\"formValid\":false}"
+[4] click #submit -> clicked
+[5] wait 1000ms
+[6] readExpr JSON.stringify({stillOnForm: location.search.includes('form=new'), url: location.search}) -> "{\"stillOnForm\":true,\"url\":\"?dashboard=redis&server=3&form=new\"}"
+[7] nav -> http://127.0.0.1:60431/?dashboard=redis&server=3&form=new
+[8] wait 800ms
+[9] set #key -> "crud:ui:with space"
+[10] set #value -> "space-key-value"
+[11] click #submit -> clicked
+[12] wait 1500ms
+[13] readExpr JSON.stringify({spaceKeyUrl: location.search, alert: [...document.querySelectorAll('.alert')].map(a= -> "{\"spaceKeyUrl\":\"?dashboard=redis&server=3&view=key&key=crud%3Aui%3Awith+space\",\"alert\":[]}"
+[14] nav -> http://127.0.0.1:60431/?dashboard=redis&server=3&form=new
+[15] wait 800ms
+[16] set #key -> "crud:UI:中文键"
+[17] set #value -> "中文值UI创建"
+[18] click #submit -> clicked
+[19] wait 1500ms
+[20] readExpr JSON.stringify({chineseKeyUrl: location.search, alert: [...document.querySelectorAll('.alert')].map( -> "{\"chineseKeyUrl\":\"?dashboard=redis&server=3&view=key&key=crud%3AUI%3A%E4%B8%AD%E6%96%87%E9%94%AE\",\"alert\":[]}"
+[21] nav -> http://127.0.0.1:60431/?dashboard=redis&server=3&form=new
+[22] wait 800ms
+[23] set #key -> "crud:ui:sp!@#$%^&*()"
+[24] set #value -> "special-chars"
+[25] click #submit -> clicked
+[26] wait 1500ms
+[27] readExpr JSON.stringify({specialUrl: location.search, alert: [...document.querySelectorAll('.alert')].map(a=> -> "{\"specialUrl\":\"?dashboard=redis&server=3&view=key&key=crud%3Aui%3Asp%21%40%23%24%25%5E%26%2A%28%29\",\"alert\":[]}"
+cdp-form: target "Redis - CacheMainDesktop" http://127.0.0.1:60431/?dashboard=redis&server=3&view=key&key=crud%3Aui%3Asp%21%40%23%24%25%5E%26%2A%28%29
+[0] nav -> http://127.0.0.1:60431/?dashboard=redis&server=3&form=new
+[1] wait 1000ms
+[2] set #key -> "crud:ui:emptyval"
+[3] readExpr JSON.stringify({valueRequired: document.querySelector('#value').required, formValidWithoutValue: doc -> "{\"valueRequired\":true,\"formValidWithoutValue\":false}"
+[4] click #submit -> clicked
+[5] wait 1500ms
+[6] readExpr JSON.stringify({emptyValUrl: location.search, alert: [...document.querySelectorAll('.alert')].map(a= -> "{\"emptyValUrl\":\"?dashboard=redis&server=3&form=new\",\"alert\":[]}"
+[7] nav -> http://127.0.0.1:60431/?dashboard=redis&server=3&form=new
+[8] wait 800ms
+[9] set #key -> "crud:ui:big100k"
+[10] readExpr (() => { const v = document.querySelector('#value'); v.value = 'y'.repeat(102400); v.dispatchEvent(n -> "set 102400"
+[11] click #submit -> clicked
+[12] wait 3000ms
+[13] readExpr JSON.stringify({bigUrl: location.search, sizeShown: document.body.innerText.match(/[0-9.]+KB/)?.[0]} -> "{\"bigUrl\":\"?dashboard=redis&server=3&view=key&key=crud%3Aui%3Abig100k\",\"sizeShown\":\"112.03KB\"}"
+[14] shot -> F:\原E盘\CacheMainDesktop-历史\调试记录\shots\crud\redis-12-create-100k-result.png
+[15] nav -> http://127.0.0.1:60431/?dashboard=redis&server=3&form=new
+[16] wait 800ms
+[17] set #key -> "crud:ui:expneg"
+[18] set #expire -> "-5"
+[19] set #value -> "negative-expire-test"
+[20] readExpr JSON.stringify({negExpireValid: document.querySelector('#expire').checkValidity(), msg: document.que -> "{\"negExpireValid\":false,\"msg\":\"值必须大于或等于 -1。\"}"
+[21] click #submit -> clicked
+[22] wait 1500ms
+[23] readExpr JSON.stringify({negUrl: location.search, alert: [...document.querySelectorAll('.alert')].map(a=>a.te -> "{\"negUrl\":\"?dashboard=redis&server=3&form=new\",\"alert\":[]}"
+[24] nav -> http://127.0.0.1:60431/?dashboard=redis&server=3&form=new
+[25] wait 800ms
+[26] set #key -> "crud:ui:expzero"
+[27] set #expire -> "0"
+[28] set #value -> "zero-expire-test"
+[29] click #submit -> clicked
+[30] wait 1500ms
+[31] readExpr JSON.stringify({zeroUrl: location.search, alert: [...document.querySelectorAll('.alert')].map(a=>a.t -> "{\"zeroUrl\":\"?dashboard=redis&server=3&view=key&key=crud%3Aui%3Aexpzero\",\"alert\":[]}"
+[32] nav -> http://127.0.0.1:60431/?dashboard=redis&server=3&form=new
+[33] wait 800ms
+[34] set #key -> "crud:ui:expbig"
+[35] set #expire -> "2147483648"
+[36] set #value -> "over-max-expire"
+[37] readExpr JSON.stringify({bigExpireValid: document.querySelector('#expire').checkValidity(), msg: document.que -> "{\"bigExpireValid\":false,\"msg\":\"值必须小于或等于 2147483647。\"}"
+[38] shot -> F:\原E盘\CacheMainDesktop-历史\调试记录\shots\crud\redis-13-create-expire-overmax.png

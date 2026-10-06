@@ -1,0 +1,6 @@
+[
+  {"readExpr": "location.href"},
+  {"readExpr": "[...document.querySelectorAll('aside.pca-sidebar a')].map(a => (a.getAttribute('href') || '(no href)') + ' :: mine=' + a.textContent.includes('本地')).join('  ||  ')"},
+  {"readExpr": "document.title"},
+  {"readExpr": "(() => { const rows = [...document.querySelectorAll('table tbody tr')]; return 'table rows: ' + rows.length; })()"}
+]

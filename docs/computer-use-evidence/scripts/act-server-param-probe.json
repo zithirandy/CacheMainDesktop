@@ -1,0 +1,5 @@
+[
+  {"readExpr": "location.href"},
+  {"readExpr": "[...document.querySelectorAll('aside.pca-sidebar a[href*=\"server\"]')].map(a => a.getAttribute('href') + ' :: mine=' + a.textContent.includes('本地') + ' :: active=' + a.classList.contains('active')).join('  ||  ')"},
+  {"readExpr": "(() => { const act = document.querySelector('aside.pca-sidebar a.active'); return act ? (act.getAttribute('href') + ' :: mine=' + act.textContent.includes('本地')) : 'no active link'; })()"}
+]

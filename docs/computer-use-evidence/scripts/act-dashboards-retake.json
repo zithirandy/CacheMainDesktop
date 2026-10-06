@@ -1,0 +1,8 @@
+[
+  {"nav": "http://127.0.0.1:57391/?dashboard=memcached&server=2"},
+  {"dumpText": true},
+  {"shotRect": {"x": 248.5, "y": 0, "width": 1026.5, "height": 806}, "shot": "docs/computer-use-evidence/memcached-dashboard.png"},
+  {"nav": "http://127.0.0.1:57391/?dashboard=redis&server=3"},
+  {"dumpText": true},
+  {"shotRect": {"x": 248.5, "y": 0, "width": 1026.5, "height": 806}, "shot": "docs/computer-use-evidence/redis-dashboard.png"}
+]

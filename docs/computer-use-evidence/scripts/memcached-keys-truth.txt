@@ -1,0 +1,9 @@
+﻿VERSION 1.6.45
+
+OK
+key=greeting exp=-1 la=1791216754 cas=7 fetch=yes cls=1 size=88 flags=0 
+key=counter exp=-1 la=1791216684 cas=8 fetch=no cls=1 size=68 flags=0 
+key=user%3A1%3Aname exp=-1 la=1791216684 cas=10 fetch=no cls=1 size=73 flags=0 
+key=config%3Aflags exp=-1 la=1791216684 cas=11 fetch=no cls=1 size=96 flags=0 
+END
+

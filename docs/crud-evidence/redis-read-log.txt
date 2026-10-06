@@ -1,0 +1,84 @@
+cdp-form: target "Redis - CacheMainDesktop" http://127.0.0.1:60431/?dashboard=redis&server=3
+[0] nav -> http://127.0.0.1:60431/?dashboard=redis&server=3
+[1] wait 2000ms
+[2] readExpr JSON.stringify({server: document.querySelector('#server_select')?.selectedOptions[0]?.text, db: docu -> "{\"server\":\"CRUD 测试 Redis - 127.0.0.1:6379\",\"db\":\"Database 9 (68 keys)\",\"rows\":50,\"paginator\":[\"Server\",\"Redis\",\"Memcached\",\"1\",\"2\"],\"total\":\"Server Redis Memcached\"}"
+[3] shot -> F:\原E盘\CacheMainDesktop-历史\调试记录\shots\crud\redis-01-list-page1.png
+cdp-form: target "Redis - CacheMainDesktop" http://127.0.0.1:60431/?dashboard=redis&server=3
+[0] nav -> http://127.0.0.1:60431/?dashboard=redis&server=3&p=2
+[1] wait 1500ms
+[2] readExpr JSON.stringify({url: location.search, rows: document.querySelectorAll('tbody tr').length, firstRow:  -> "{\"url\":\"?dashboard=redis&server=3&p=2\",\"rows\":18,\"firstRow\":\"crud:bulk:48 48.00B string Doesn't expire Delete\"}"
+[3] shot -> F:\原E盘\CacheMainDesktop-历史\调试记录\shots\crud\redis-02-pagination-page2.png
+[4] nav -> http://127.0.0.1:60431/?dashboard=redis&server=3&per_page=100
+[5] wait 1500ms
+[6] readExpr JSON.stringify({perPageSel: document.querySelector('#per_page')?.value, rows: document.querySelector -> "{\"perPageSel\":\"50\",\"rows\":50}"
+[7] nav -> http://127.0.0.1:60431/?dashboard=redis&server=3&sortcol=ttl&sortdir=asc
+[8] wait 1500ms
+[9] readExpr JSON.stringify({url: location.search, top3: [...document.querySelectorAll('tbody tr')].slice(0,3).ma -> "{\"url\":\"?dashboard=redis&server=3&sortcol=ttl&sortdir=asc\",\"top3\":[\"crud:bulk:ttl:short 80.00B string 61 Delete\",\"crud:bulk:ttl:long 64.00B string 3542 Delete\",\"crud:bulk:17 48.00B string Doesn't expire Delete\"]}"
+[10] shot -> F:\原E盘\CacheMainDesktop-历史\调试记录\shots\crud\redis-03-sort-ttl-asc.png
+[11] nav -> http://127.0.0.1:60431/?dashboard=redis&server=3&sortcol=bytes_size&sortdir=desc
+[12] wait 1500ms
+[13] readExpr JSON.stringify({top3: [...document.querySelectorAll('tbody tr')].slice(0,3).map(tr=>tr.textContent.r -> "{\"top3\":[\"crud:bulk:ttl:short 80.00B string 58 Delete\",\"crud:中文键:测试 70.00B string Doesn't expire Delete\",\"crud:bulk:ttl:long 64.00B string 3538 Delete\"]}"
+cdp-form: target "Redis - CacheMainDesktop" http://127.0.0.1:60431/?dashboard=redis&server=3&sortcol=bytes_size&sortdir=desc
+[0] nav -> http://127.0.0.1:60431/?dashboard=redis&server=3&pp=100
+[1] wait 1500ms
+[2] readExpr JSON.stringify({perPageSel: document.querySelector('#per_page')?.value, rows: document.querySelector -> "{\"perPageSel\":\"100\",\"rows\":68}"
+[3] shot -> F:\原E盘\CacheMainDesktop-历史\调试记录\shots\crud\redis-02b-perpage100.png
+cdp-form: target "Redis - CacheMainDesktop" http://127.0.0.1:60431/?dashboard=redis&server=3&pp=100
+[0] nav -> http://127.0.0.1:60431/?dashboard=redis&server=3&s=crud:seed:string
+[1] wait 1200ms
+[2] readExpr JSON.stringify({q:'exact crud:seed:string', rows: document.querySelectorAll('tbody tr').length, rows -> "{\"q\":\"exact crud:seed:string\",\"rows\":1,\"rows_text\":[\"crud:seed:string\"]}"
+[3] nav -> http://127.0.0.1:60431/?dashboard=redis&server=3&s=seed
+[4] wait 1200ms
+[5] readExpr JSON.stringify({q:'partial seed', rows: document.querySelectorAll('tbody tr').length, first3: [...do -> "{\"q\":\"partial seed\",\"rows\":5,\"first3\":[\"crud:seed:set\\n                                                                    (3 items)\",\"crud:seed:string\",\"crud:seed:list\\n                                                                    (4 items)\"]}"
+[6] nav -> http://127.0.0.1:60431/?dashboard=redis&server=3&s=crud:bulk:*
+[7] wait 1200ms
+[8] readExpr JSON.stringify({q:'wildcard crud:bulk:*', rows: document.querySelectorAll('tbody tr').length}) -> "{\"q\":\"wildcard crud:bulk:*\",\"rows\":50}"
+[9] nav -> http://127.0.0.1:60431/?dashboard=redis&server=3&s=zzz-does-not-exist
+[10] wait 1200ms
+[11] readExpr JSON.stringify({q:'nonexistent', rows: document.querySelectorAll('tbody tr').length, emptyMsg: docum -> "{\"q\":\"nonexistent\",\"rows\":0,\"emptyMsg\":\"No keys.\"}"
+[12] shot -> F:\原E盘\CacheMainDesktop-历史\调试记录\shots\crud\redis-04b-search-none.png
+[13] nav -> http://127.0.0.1:60431/?dashboard=redis&server=3&s=%E4%B8%AD%E6%96%87
+[14] wait 1200ms
+[15] readExpr JSON.stringify({q:'Chinese 中文', rows: document.querySelectorAll('tbody tr').length, rows_text: [...d -> "{\"q\":\"Chinese 中文\",\"rows\":1,\"rows_text\":[\"crud:中文键:测试\"],\"searchValue\":\"中文\"}"
+[16] shot -> F:\原E盘\CacheMainDesktop-历史\调试记录\shots\crud\redis-04c-search-chinese.png
+cdp-form: target "Redis - CacheMainDesktop" http://127.0.0.1:60431/?dashboard=redis&server=3&s=%E4%B8%AD%E6%96%87
+[0] nav -> http://127.0.0.1:60431/?dashboard=redis&server=3&view=key&key=crud:seed:hash
+[1] wait 1500ms
+[2] readExpr JSON.stringify({key:'crud:seed:hash', heading: document.querySelector('h1,h2,h3')?.textContent.trim( -> "{\"key\":\"crud:seed:hash\",\"heading\":\"Server\",\"subkeys\":0,\"sample\":[],\"buttons\":[\"Connections\",\"Delete\",\"Delete\",\"Delete\"]}"
+[3] shot -> F:\原E盘\CacheMainDesktop-历史\调试记录\shots\crud\redis-05-keyview-hash.png
+[4] nav -> http://127.0.0.1:60431/?dashboard=redis&server=3&view=key&key=crud:seed:zset
+[5] wait 1500ms
+[6] readExpr JSON.stringify({key:'crud:seed:zset', rows: document.querySelectorAll('tbody tr').length, sample: [. -> "{\"key\":\"crud:seed:zset\",\"rows\":0,\"sample\":[]}"
+[7] nav -> http://127.0.0.1:60431/?dashboard=redis&server=3&view=key&key=crud:big:100k
+[8] wait 1500ms
+[9] readExpr JSON.stringify({key:'crud:big:100k', valueLen: (document.querySelector('.code, pre, .value, #value') -> "{\"key\":\"crud:big:100k\",\"valueLen\":0,\"first80\":\"\",\"notice\":\"More info\"}"
+[10] shot -> F:\原E盘\CacheMainDesktop-历史\调试记录\shots\crud\redis-06-keyview-100k.png
+[11] nav -> http://127.0.0.1:60431/?dashboard=redis&server=3&view=key&key=crud:big:hash
+[12] wait 1500ms
+[13] readExpr JSON.stringify({key:'crud:big:hash', rows: document.querySelectorAll('tbody tr').length, paginator:  -> "{\"key\":\"crud:big:hash\",\"rows\":0,\"paginator\":[\"Server\",\"Redis\",\"Memcached\",\"1\",\"2\",\"3\"]}"
+[14] nav -> http://127.0.0.1:60431/?dashboard=redis&server=3&view=key&key=crud:bulk:ttl:long
+[15] wait 1500ms
+[16] readExpr JSON.stringify({key:'crud:bulk:ttl:long', ttlText: document.body.innerText.match(/(Expires|TTL)[^\n] -> "{\"key\":\"crud:bulk:ttl:long\",\"ttlText\":\"ttl:long\",\"editBtn\":true}"
+cdp-form: target "Redis - CacheMainDesktop" http://127.0.0.1:60431/?dashboard=redis&server=3&view=key&key=crud:big:hash
+[0] nav -> http://127.0.0.1:60431/?dashboard=redis&server=3&view=key&key=crud:big:100k
+[1] wait 1500ms
+[2] readExpr JSON.stringify((()=>{const el=[...document.querySelectorAll('div,pre,code')].find(e=>(e.textContent| -> "{\"found\":true,\"tag\":\"DIV\",\"cls\":\"flex flex-col flex-1 min-w-0\",\"overflow\":\"visible/visible\",\"maxHeight\":\"none\",\"textLen\":109060,\"scrollH\":871,\"clientH\":685,\"parentOverflow\":\"hidden\"}"
+cdp-form: target "Redis - CacheMainDesktop" http://127.0.0.1:60431/?dashboard=redis&server=3&view=key&key=crud:big:100k
+[0] nav -> http://127.0.0.1:60431/?dashboard=redis&server=3&view=tree
+[1] wait 1800ms
+[2] readExpr JSON.stringify({view:'tree', url: location.search, treeItems: document.querySelectorAll('li, [class* -> "{\"view\":\"tree\",\"url\":\"?dashboard=redis&server=3&view=tree\",\"treeItems\":10,\"sample\":[]}"
+[3] shot -> F:\原E盘\CacheMainDesktop-历史\调试记录\shots\crud\redis-07-treeview.png
+[4] nav -> http://127.0.0.1:60431/?dashboard=redis&server=3
+[5] wait 1500ms
+[6] readExpr JSON.stringify({firstKeyLink: document.querySelector('tbody tr a[href*=view\\=key]')?.getAttribute(' -> "{\"firstKeyLink\":\"?dashboard=redis&server=3&view=key&key=crud%3Abulk%3A17\"}"
+file:///F:/%E5%8E%9FE%E7%9B%98/CacheMainDesktop/tools/cdp-form.mjs:94
+        throw new Error(result.exceptionDetails.exception?.description ?? 'evaluate failed');
+              ^
+
+Error: SyntaxError: Failed to execute 'querySelector' on 'Document': 'tbody tr a[href*=view\\=key]' is not a valid selector.
+    at <anonymous>:2:34
+    at <anonymous>:6:11
+    at evaluate (file:///F:/%E5%8E%9FE%E7%9B%98/CacheMainDesktop/tools/cdp-form.mjs:94:15)
+    at async file:///F:/%E5%8E%9FE%E7%9B%98/CacheMainDesktop/tools/cdp-form.mjs:116:24
+
+Node.js v24.18.0

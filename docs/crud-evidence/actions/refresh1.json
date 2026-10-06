@@ -1,0 +1,5 @@
+[
+  {"nav": "http://127.0.0.1:60431/?dashboard=redis&server=3"},
+  {"wait": 2500},
+  {"readExpr": "JSON.stringify({uptime: (document.body.innerText.match(/Uptime[\\s\\S]{0,50}/)||[''])[0].replace(/[\\r\\n]+/g,' '), dbLabel: document.querySelector('#db_select option:checked')?.textContent})"}
+]

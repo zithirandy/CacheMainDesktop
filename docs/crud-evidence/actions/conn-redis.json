@@ -1,0 +1,9 @@
+[
+  {"set": {"sel": "#f-type", "val": "redis"}},
+  {"set": {"sel": "#f-name", "val": "CRUD 测试 Redis"}},
+  {"set": {"sel": "#f-host", "val": "127.0.0.1"}},
+  {"set": {"sel": "#f-port", "val": "6379"}},
+  {"set": {"sel": "#f-database", "val": "9"}},
+  {"click": "#editor-apply"},
+  {"readText": "#status"}
+]

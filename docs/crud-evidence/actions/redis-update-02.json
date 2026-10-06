@@ -1,0 +1,5 @@
+[
+  {"nav": "http://127.0.0.1:60431/?dashboard=redis&server=3&view=key&key=crud:ui:hash01"},
+  {"wait": 1500},
+  {"readExpr": "JSON.stringify({editLinks: [...document.querySelectorAll('a[href*=form\\\\=edit], a[href*=subkey]')].slice(0,4).map(a=>({t:a.textContent.trim().slice(0,20), href:a.getAttribute('href')})), server: document.querySelector('#server_select')?.selectedOptions[0]?.text})"}
+]

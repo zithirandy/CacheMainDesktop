@@ -1,0 +1,298 @@
+cdp-form: target "Redis - CacheMainDesktop" http://127.0.0.1:60431/?dashboard=redis&server=3
+[0] nav -> http://127.0.0.1:60431/?dashboard=memcached&server=2
+[1] wait 2000ms
+[2] readExpr JSON.stringify({server: document.querySelector('#server_select')?.selectedOptions[0]?.text, options: -> "{\"server\":\"CRUD 测试 Memcached - 127.0.0.1:11211\",\"options\":[\"LAN-PROD - [REDACTED-LAN]:11211\",\"本地 Memcached - 127.0.0.1:11211\",\"CRUD 测试 Memcached - 127.0.0.1:11211\"],\"url\":\"?dashboard=memcached&server=2\"}"
+[3] readExpr JSON.stringify({rows: [...document.querySelectorAll('tbody tr')].map(tr=>tr.textContent.replace(/\s+ -> "{\"rows\":[\"greeting 88.00B 12 hours ago Doesn't expire Delete\",\"counter 68.00B 12 hours ago Doesn't expire Delete\",\"user:1:name 73.00B 12 hours ago Doesn't expire Delete\",\"config:flags 96.00B 12 hours ago Doesn't expire Delete\"]}"
+[4] shot -> F:\原E盘\CacheMainDesktop-历史\调试记录\shots\crud\memcached-01-list.png
+cdp-form: target "Memcached - CacheMainDesktop" http://127.0.0.1:60431/?dashboard=memcached&server=2
+[0] nav -> http://127.0.0.1:60431/?dashboard=memcached&server=2&s=user
+[1] wait 1200ms
+[2] readExpr JSON.stringify({q:'user', rows: [...document.querySelectorAll('tbody tr')].map(tr=>tr.textContent.re -> "{\"q\":\"user\",\"rows\":[\"user:1:name 73.00B 12 hours ago Doesn't expire Delete\"]}"
+[3] nav -> http://127.0.0.1:60431/?dashboard=memcached&server=2&s=zzz-none
+[4] wait 1200ms
+[5] readExpr JSON.stringify({q:'nonexistent', rows: document.querySelectorAll('tbody tr').length, empty: document -> "{\"q\":\"nonexistent\",\"rows\":0,\"empty\":\"\"}"
+[6] nav -> http://127.0.0.1:60431/?dashboard=memcached&server=2&view=key&key=config%3Aflags
+[7] wait 1500ms
+[8] --- body.innerText start ---
+CacheMain
+Desktop
+Server
+Redis
+Memcached
+SERVER
+LAN-PROD - [REDACTED-LAN]:11211
+本地 Memcached - 127.0.0.1:11211
+CRUD 测试 Memcached - 127.0.0.1:11211
+Connections
+v2.7.2
+·
+phpCacheAdmin
+Keys
+Analysis
+Commands Stats
+Slabs
+Items
+Metrics
+Connections
+Watcher
+Console
+More info
+config:flags
+TTL
+DOESN'T EXPIRE
+Size
+96.00B
+Export
+Delete
+Edit
+Formatted
+Raw
+Hex
+{
+    "debug": false,
+    "level": 3
+}
+Server
+Server version
+1.6.45
+Client
+PHPMem v2.1.0
+Uptime
+12 hours 7 minutes
+Memory
+Total
+64.0MB
+Used
+325.00B (0%)
+Free
+64.00MB
+Keys
+Current
+4
+Total (since start)
+10
+Evictions
+0
+Reclaimed
+0
+Expired Unfetched
+1
+Evicted Unfetched
+0
+Connections
+Current
+2 / 1,024 max
+Total
+8,656
+Rejected
+0
+Network
+Read
+76.84KB (1.00B/s)
+Written
+186.25KB (4.00B/s)
+Total
+263.08KB
+[8] --- body.innerText end ---
+[9] shot -> F:\原E盘\CacheMainDesktop-历史\调试记录\shots\crud\memcached-02-keyview.png
+cdp-form: target "Memcached - CacheMainDesktop" http://127.0.0.1:60431/?dashboard=memcached&server=2&view=key&key=config%3Aflags
+[0] nav -> http://127.0.0.1:60431/?dashboard=memcached&server=2&form=new
+[1] wait 1500ms
+[2] readExpr JSON.stringify({server: document.querySelector('#server_select')?.selectedOptions[0]?.text, inputs:  -> "{\"server\":\"CRUD 测试 Memcached - 127.0.0.1:11211\",\"inputs\":[{\"id\":\"server_select\",\"name\":\"server_select\",\"type\":\"select-one\",\"val\":\"2\"},{\"id\":\"\",\"name\":\"csrf_token\",\"type\":\"hidden\",\"val\":\"b5b67dbd94b815dbcdbd\"},{\"id\":\"\",\"name\":\"old_key\",\"type\":\"hidden\",\"val\":\"\"},{\"id\":\"key\",\"name\":\"key\",\"type\":\"text\",\"val\":\"\"},{\"id\":\"expire\",\"name\":\"expire\",\"type\":\"number\",\"val\":\"0\"},{\"id\":\"encoder\",\"name\":\"encoder\",\"type\":\"select-one\",\"val\":\"none\"},{\"id\":\"value\",\"name\":\"value\",\"type\":\"textarea\",\"val\":\"\"}]}"
+[3] --- body.innerText start ---
+CacheMain
+Desktop
+Server
+Redis
+Memcached
+SERVER
+LAN-PROD - [REDACTED-LAN]:11211
+本地 Memcached - 127.0.0.1:11211
+CRUD 测试 Memcached - 127.0.0.1:11211
+Connections
+v2.7.2
+·
+phpCacheAdmin
+Keys
+Analysis
+Commands Stats
+Slabs
+Items
+Metrics
+Connections
+Watcher
+Console
+More info
+Key
+Expire (in seconds)
+ 0 removes expiration (default).
+Encode function
+gzcompress
+gzencode
+gzdeflate
+zlib
+none
+Value
+Save key
+Server
+Server version
+1.6.45
+Client
+PHPMem v2.1.0
+Uptime
+12 hours 7 minutes
+Memory
+Total
+64.0MB
+Used
+325.00B (0%)
+Free
+64.00MB
+Keys
+Current
+4
+Total (since start)
+10
+Evictions
+0
+Reclaimed
+0
+Expired Unfetched
+1
+Evicted Unfetched
+0
+Connections
+Current
+2 / 1,024 max
+Total
+8,668
+Rejected
+0
+Network
+Read
+76.94KB (1.00B/s)
+Written
+193.03KB (4.00B/s)
+Total
+269.97KB
+[3] --- body.innerText end ---
+cdp-form: target "Memcached - CacheMainDesktop" http://127.0.0.1:60431/?dashboard=memcached&server=2&form=new
+[0] nav -> http://127.0.0.1:60431/?dashboard=memcached&server=2&form=new
+[1] wait 1200ms
+[2] set #key -> "crud:mem:str1"
+[3] set #value -> "mem-ui-create"
+[4] click #submit -> clicked
+[5] wait 2000ms
+[6] readExpr JSON.stringify({url1: location.search}) -> "{\"url1\":\"?dashboard=memcached&server=2&view=key&ttl=0&key=crud%3Amem%3Astr1\"}"
+[7] nav -> http://127.0.0.1:60431/?dashboard=memcached&server=2&form=new
+[8] wait 1000ms
+[9] set #key -> "crud:mem:ttl120"
+[10] set #expire -> "120"
+[11] set #value -> "expires-soon"
+[12] click #submit -> clicked
+[13] wait 2000ms
+[14] readExpr JSON.stringify({url2: location.search}) -> "{\"url2\":\"?dashboard=memcached&server=2&view=key&ttl=120&key=crud%3Amem%3Attl120\"}"
+cdp-form: target "Memcached - CacheMainDesktop" http://127.0.0.1:60431/?dashboard=memcached&server=2&view=key&ttl=120&key=crud%3Amem%3Attl120
+[0] nav -> http://127.0.0.1:60431/?dashboard=memcached&server=2&form=new
+[1] wait 1200ms
+[2] set #value -> "x"
+[3] readExpr JSON.stringify({keyRequired: document.querySelector('#key').required}) -> "{\"keyRequired\":true}"
+[4] click #submit -> clicked
+[5] wait 1000ms
+[6] readExpr JSON.stringify({emptyKeyBlocked: location.search.includes('form=new'), msg: document.querySelector(' -> "{\"emptyKeyBlocked\":true,\"msg\":\"请填写此字段。\"}"
+[7] nav -> http://127.0.0.1:60431/?dashboard=memcached&server=2&form=new
+[8] wait 800ms
+[9] set #key -> "crud:mem:emptyval"
+[10] readExpr JSON.stringify({valueRequired: document.querySelector('#value').required, formValid: document.queryS -> "{\"valueRequired\":true,\"formValid\":false}"
+[11] nav -> http://127.0.0.1:60431/?dashboard=memcached&server=2&form=new
+[12] wait 800ms
+[13] set #key -> "crud:mem:中文键"
+[14] set #value -> "中文值"
+[15] click #submit -> clicked
+[16] wait 1500ms
+[17] readExpr JSON.stringify({chineseUrl: location.search}) -> "{\"chineseUrl\":\"?dashboard=memcached&server=2&view=key&ttl=0&key=crud%3Amem%3A%E4%B8%AD%E6%96%87%E9%94%AE\"}"
+[18] nav -> http://127.0.0.1:60431/?dashboard=memcached&server=2&form=new
+[19] wait 800ms
+[20] set #key -> "crud:mem:sp!@#$"
+[21] set #value -> "special"
+[22] click #submit -> clicked
+[23] wait 1500ms
+[24] readExpr JSON.stringify({specialUrl: location.search}) -> "{\"specialUrl\":\"?dashboard=memcached&server=2&view=key&ttl=0&key=crud%3Amem%3Asp%21%40%23%24\"}"
+[25] nav -> http://127.0.0.1:60431/?dashboard=memcached&server=2&form=new
+[26] wait 800ms
+[27] set #key -> "crud:mem:expneg"
+[28] set #expire -> "-5"
+[29] set #value -> "neg"
+[30] readExpr JSON.stringify({negExpireValid: document.querySelector('#expire').checkValidity(), msg: document.que -> "{\"negExpireValid\":false,\"msg\":\"值必须大于或等于 0。\"}"
+[31] nav -> http://127.0.0.1:60431/?dashboard=memcached&server=2&form=new
+[32] wait 800ms
+[33] set #key -> "crud:mem:big100k"
+[34] readExpr (() => { const v = document.querySelector('#value'); v.value = 'z'.repeat(102400); v.dispatchEvent(n -> "len 102400"
+[35] click #submit -> clicked
+[36] wait 2500ms
+[37] readExpr JSON.stringify({bigUrl: location.search, sizeShown: document.body.innerText.match(/[0-9.]+KB/)?.[0]} -> "{\"bigUrl\":\"?dashboard=memcached&server=2&view=key&ttl=0&key=crud%3Amem%3Abig100k\",\"sizeShown\":\"100.07KB\"}"
+[38] shot -> F:\原E盘\CacheMainDesktop-历史\调试记录\shots\crud\memcached-03-create-100k.png
+cdp-form: target "Memcached - CacheMainDesktop" http://127.0.0.1:60431/?dashboard=memcached&server=2&view=key&ttl=0&key=crud%3Amem%3Abig100k
+[0] nav -> http://127.0.0.1:60431/?dashboard=memcached&server=2&form=edit&key=crud%3Amem%3Astr1
+[1] wait 1500ms
+[2] readExpr JSON.stringify({server: document.querySelector('#server_select')?.selectedOptions[0]?.text, key: doc -> "{\"server\":\"CRUD 测试 Memcached - 127.0.0.1:11211\",\"key\":\"crud:mem:str1\",\"value\":\"mem-ui-create\",\"oldKey\":\"crud:mem:str1\"}"
+[3] set #value -> "mem-ui-UPDATED"
+[4] click #submit -> clicked
+[5] wait 2000ms
+[6] readExpr JSON.stringify({afterEdit: location.search}) -> "{\"afterEdit\":\"?dashboard=memcached&server=2&view=key&ttl=0&key=crud%3Amem%3Astr1\"}"
+[7] nav -> http://127.0.0.1:60431/?dashboard=memcached&server=2&form=edit&key=crud%3Amem%3Attl120
+[8] wait 1500ms
+[9] readExpr JSON.stringify({ttlKeyExpirePrefill: document.querySelector('#expire')?.value}) -> "{\"ttlKeyExpirePrefill\":\"0\"}"
+[10] set #expire -> "300"
+[11] click #submit -> clicked
+[12] wait 2000ms
+[13] readExpr JSON.stringify({afterTtl: location.search}) -> "{\"afterTtl\":\"?dashboard=memcached&server=2&view=key&ttl=300&key=crud%3Amem%3Attl120\"}"
+<anonymous_script>:7
+  {"readExpr": "JSON.stringify({out: document.querySelector('#console')?.innerText.replace(/\s+/g,' ').trim().slice(-160)})"},
+                                                                                             ^
+
+SyntaxError: Bad escaped character in JSON at position 654 (line 7 column 94)
+    at JSON.parse (<anonymous>)
+    at file:///F:/%E5%8E%9FE%E7%9B%98/CacheMainDesktop/tools/cdp-form.mjs:44:22
+
+Node.js v24.18.0
+cdp-form: target "Memcached - CacheMainDesktop" http://127.0.0.1:60431/?dashboard=memcached&server=2&view=key&ttl=0&key=crud%3Amem%3Attltrap
+[0] nav -> http://127.0.0.1:60431/?dashboard=memcached&server=2&tab=console
+[1] wait 1500ms
+[2] readExpr JSON.stringify({server: document.querySelector('#server_select')?.selectedOptions[0]?.text, welcome: -> "{\"server\":\"CRUD 测试 Memcached - 127.0.0.1:11211\",\"welcome\":\"Type a Memcached command and press Enter (e.g. version,\\n    \"}"
+[3] readExpr (() => { const i = document.querySelector('#console_input'); i.value = 'version'; i.dispatchEvent(ne -> "sent"
+[4] wait 1500ms
+[5] readExpr JSON.stringify({out: document.querySelector('#console')?.innerText.replace(/[\r\n]+/g,' | ').trim(). -> "{\"out\":\"). Storage commands take the value as a \\\\n escape, e.g. set foo 0 0 3\\\\nbar. Type clear to reset the output. | memcached> | version | VERSION 1.6.45 | memcached>\"}"
+[6] shot -> F:\原E盘\CacheMainDesktop-历史\调试记录\shots\crud\memcached-04-console.png
+cdp-form: target "Memcached - CacheMainDesktop" http://127.0.0.1:60431/?dashboard=memcached&server=2
+[0] nav -> http://127.0.0.1:60431/?dashboard=memcached&server=2
+[1] wait 1500ms
+[2] readExpr (() => { const keys = ['crud:mem:imported:ok','crud:mem:ttltrap']; let n = 0; for (const k of keys)  -> "checked 2"
+[3] readExpr JSON.stringify({server: document.querySelector('#server_select')?.selectedOptions[0]?.text, checked: -> "{\"server\":\"CRUD 测试 Memcached - 127.0.0.1:11211\",\"checked\":2}"
+cdp-confirm: target "Memcached - CacheMainDesktop" http://127.0.0.1:60431/?dashboard=memcached&server=2
+cdp-confirm: DIALOG confirm @ http://127.0.0.1:60431/?dashboard=memcached&server=2
+cdp-confirm: DIALOG TEXT: "Are you sure you want to remove selected items?"
+cdp-confirm: answered accept
+cdp-confirm: click #delete_selected -> clicked
+cdp-confirm: final URL query: ?dashboard=memcached&server=2
+cdp-confirm: dialogs seen: 1
+cdp-confirm: target "Memcached - CacheMainDesktop" http://127.0.0.1:60431/?dashboard=memcached&server=2
+cdp-confirm: DIALOG confirm @ http://127.0.0.1:60431/?dashboard=memcached&server=2
+cdp-confirm: DIALOG TEXT: "Are you sure you want to remove all items?"
+cdp-confirm: answered accept
+cdp-confirm: click #delete_all -> clicked
+cdp-confirm: final URL query: ?dashboard=memcached&server=2
+cdp-confirm: dialogs seen: 1
+cdp-confirm: wrote F:\原E盘\CacheMainDesktop-历史\调试记录\shots\crud\memcached-06-delete-all.png
+cdp-form: target "Memcached - CacheMainDesktop" http://127.0.0.1:60431/?dashboard=memcached&server=2
+[0] nav -> http://127.0.0.1:60431/?dashboard=memcached&server=2
+[1] wait 1500ms
+[2] readExpr JSON.stringify({emptyState: document.querySelector('tbody')?.textContent.trim().slice(0,60), emptyMs -> "{\"emptyState\":\"\",\"emptyMsg\":\"No keys.\",\"toolbarButtons\":[]}"
+[3] shot -> F:\原E盘\CacheMainDesktop-历史\调试记录\shots\crud\memcached-07-emptystate.png
+[4] readExpr (() => { const impBtn = [...document.querySelectorAll('button,a')].find(b=>b.textContent.trim()==='I -> "import modal clicked"
+[5] wait 800ms
+[6] readExpr JSON.stringify({modalVisible: (()=>{const m=document.querySelector('#importkeys'); if(!m) return 'mi -> "{\"modalVisible\":true,\"modalTitle\":\"Import keys\"}"
+[7] readExpr (() => { document.dispatchEvent(new KeyboardEvent('keydown', {key:'Escape', bubbles:true})); const m -> "esc sent, modal display=flex"
+[8] wait 500ms
+[9] readExpr JSON.stringify({modalAfterEsc: (()=>{const m=document.querySelector('#importkeys'); return m ? getCo -> "{\"modalAfterEsc\":\"flex\"}"
+[10] readExpr JSON.stringify({tabindexStats: {tabindexPositive: document.querySelectorAll('[tabindex]:not([tabinde -> "{\"tabindexStats\":{\"tabindexPositive\":0,\"tabindexZero\":0},\"ariaLabels\":[\"Dashboards\",\"Server\",\"Theme\",\"Select all keys\",\"Close\"],\"labelsFor\":2,\"searchHasAria\":false}"

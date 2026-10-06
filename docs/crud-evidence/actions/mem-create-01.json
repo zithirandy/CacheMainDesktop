@@ -1,0 +1,6 @@
+[
+  {"nav": "http://127.0.0.1:60431/?dashboard=memcached&server=2&form=new"},
+  {"wait": 1500},
+  {"readExpr": "JSON.stringify({server: document.querySelector('#server_select')?.selectedOptions[0]?.text, inputs: [...document.querySelectorAll('#key,#value,#expire,input,select,textarea')].map(i=>({id:i.id, name:i.name, type:i.type, val:(i.value||'').slice(0,20)})).filter((v,i,a)=>v.id||v.name)})"},
+  {"dumpText": true}
+]

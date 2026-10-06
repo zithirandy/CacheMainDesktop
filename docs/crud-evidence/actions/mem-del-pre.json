@@ -1,0 +1,5 @@
+[
+  {"nav": "http://127.0.0.1:60431/?dashboard=memcached&server=2"},
+  {"wait": 1500},
+  {"readExpr": "JSON.stringify({server: document.querySelector('#server_select')?.selectedOptions[0]?.text, rowKeyAttr: document.querySelector('tbody tr')?.getAttribute('data-key')})"}
+]

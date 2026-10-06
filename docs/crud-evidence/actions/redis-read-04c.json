@@ -1,0 +1,5 @@
+[
+  {"nav": "http://127.0.0.1:60431/?dashboard=redis&server=3&view=key&key=crud:big:100k"},
+  {"wait": 1500},
+  {"readExpr": "JSON.stringify((()=>{const el=[...document.querySelectorAll('div,pre,code')].find(e=>(e.textContent||'').length>100000); if(!el) return {found:false}; const cs=getComputedStyle(el); return {found:true, tag:el.tagName, cls:String(el.className).slice(0,60), overflow:cs.overflow+'/'+cs.overflowX, maxHeight:cs.maxHeight, textLen:el.textContent.length, scrollH:el.scrollHeight, clientH:el.clientHeight, parentOverflow: getComputedStyle(el.parentElement).overflowY};})())"}
+]

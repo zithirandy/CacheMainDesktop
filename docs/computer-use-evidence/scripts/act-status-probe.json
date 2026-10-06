@@ -1,0 +1,7 @@
+[
+  {"readText": "#status"},
+  {"readExpr": "document.getElementById('status').className"},
+  {"readExpr": "document.getElementById('save').disabled"},
+  {"count": "#list .conn"},
+  {"readExpr": "window.__probeSentinel === undefined ? 'page-was-reloaded' : 'page-alive'"}
+]

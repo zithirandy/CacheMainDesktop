@@ -1,0 +1,11 @@
+[
+  {"click": "#add"},
+  {"set": {"sel": "#f-type", "val": "memcached"}},
+  {"set": {"sel": "#f-name", "val": "CRUD 测试 Memcached"}},
+  {"set": {"sel": "#f-host", "val": "127.0.0.1"}},
+  {"set": {"sel": "#f-port", "val": "11211"}},
+  {"click": "#editor-apply"},
+  {"readText": "#status"},
+  {"count": "#list .conn, .conn"},
+  {"shotSel": "#editor", "shot": "F:\\原E盘\\CacheMainDesktop-历史\\调试记录\\shots\\crud\\conn-01-redis-form.png"}
+]

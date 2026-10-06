@@ -1,0 +1,524 @@
+{
+  "url": "http://127.0.0.1:60431/?dashboard=redis",
+  "title": "Redis - CacheMainDesktop",
+  "sidebarNav": [
+    {
+      "text": "Server",
+      "href": "?dashboard=server"
+    },
+    {
+      "text": "Redis",
+      "href": "?dashboard=redis"
+    },
+    {
+      "text": "Memcached",
+      "href": "?dashboard=memcached"
+    },
+    {
+      "text": "phpCacheAdmin",
+      "href": "https://github.com/RobiNN1/phpCacheAdmin"
+    }
+  ],
+  "tabs": [],
+  "buttons": [
+    {
+      "text": "Connections",
+      "id": "pca-open-connections",
+      "name": null,
+      "type": "button",
+      "cls": "gap-2 items-center px-3 py-2 w-full text-sm font-m"
+    },
+    {
+      "text": "",
+      "id": null,
+      "name": null,
+      "type": "button",
+      "cls": "flex flex-1 justify-center items-center py-1.5 tex"
+    },
+    {
+      "text": "",
+      "id": null,
+      "name": null,
+      "type": "button",
+      "cls": "flex flex-1 justify-center items-center py-1.5 tex"
+    },
+    {
+      "text": "",
+      "id": null,
+      "name": null,
+      "type": "button",
+      "cls": "flex flex-1 justify-center items-center py-1.5 tex"
+    },
+    {
+      "text": "",
+      "id": "submit_search",
+      "name": "submit_search",
+      "type": "button",
+      "cls": "text-sm inline-flex items-center gap-1 border bord"
+    },
+    {
+      "text": "Import",
+      "id": null,
+      "name": "",
+      "type": "button",
+      "cls": "text-sm inline-flex items-center gap-1 border bord"
+    },
+    {
+      "text": "Delete all",
+      "id": "delete_all",
+      "name": "delete_all",
+      "type": "button",
+      "cls": "text-sm inline-flex items-center gap-1 border bord"
+    },
+    {
+      "text": "Delete selected",
+      "id": "delete_selected",
+      "name": "delete_selected",
+      "type": "button",
+      "cls": "text-sm inline-flex items-center gap-1 border bord"
+    },
+    {
+      "text": "Key",
+      "id": null,
+      "name": null,
+      "type": "button",
+      "cls": "inline-flex gap-1 items-center text-xs font-bold u"
+    },
+    {
+      "text": "Size",
+      "id": null,
+      "name": null,
+      "type": "button",
+      "cls": "inline-flex gap-1 items-center text-xs font-bold u"
+    },
+    {
+      "text": "Type",
+      "id": null,
+      "name": null,
+      "type": "button",
+      "cls": "inline-flex gap-1 items-center text-xs font-bold u"
+    },
+    {
+      "text": "TTL",
+      "id": null,
+      "name": null,
+      "type": "button",
+      "cls": "inline-flex gap-1 items-center text-xs font-bold u"
+    },
+    {
+      "text": "Delete",
+      "id": null,
+      "name": null,
+      "type": "button",
+      "cls": "inline-flex gap-1 items-center font-semibold text-"
+    },
+    {
+      "text": "Delete",
+      "id": null,
+      "name": null,
+      "type": "button",
+      "cls": "inline-flex gap-1 items-center font-semibold text-"
+    },
+    {
+      "text": "Delete",
+      "id": null,
+      "name": null,
+      "type": "button",
+      "cls": "inline-flex gap-1 items-center font-semibold text-"
+    },
+    {
+      "text": "Delete",
+      "id": null,
+      "name": null,
+      "type": "button",
+      "cls": "inline-flex gap-1 items-center font-semibold text-"
+    },
+    {
+      "text": "Delete",
+      "id": null,
+      "name": null,
+      "type": "button",
+      "cls": "inline-flex gap-1 items-center font-semibold text-"
+    },
+    {
+      "text": "Delete",
+      "id": null,
+      "name": null,
+      "type": "button",
+      "cls": "inline-flex gap-1 items-center font-semibold text-"
+    },
+    {
+      "text": "Delete",
+      "id": null,
+      "name": null,
+      "type": "button",
+      "cls": "inline-flex gap-1 items-center font-semibold text-"
+    },
+    {
+      "text": "",
+      "id": null,
+      "name": null,
+      "type": "button",
+      "cls": "inline-flex shrink-0 justify-center items-center t"
+    },
+    {
+      "text": "Import",
+      "id": "submit_import_key",
+      "name": "submit_import_key",
+      "type": "submit",
+      "cls": "text-sm inline-flex items-center gap-1 border bord"
+    }
+  ],
+  "selects": [
+    {
+      "id": "server_select",
+      "name": "server_select",
+      "selected": "Local Redis - 127.0.0.1:6379",
+      "options": [
+        "Local Redis - 127.0.0.1:6379",
+        "Redis_122 - [REDACTED-LAN]:6379",
+        "本地 Redis - 127.0.0.1:6379",
+        "CRUD 测试 Redis - 127.0.0.1:6379"
+      ]
+    },
+    {
+      "id": "per_page",
+      "name": "per_page",
+      "selected": "50",
+      "options": [
+        "50",
+        "100",
+        "200",
+        "300",
+        "400",
+        "500",
+        "1000"
+      ]
+    },
+    {
+      "id": "db_select",
+      "name": "db_select",
+      "selected": "Database 0 (7 keys)",
+      "options": [
+        "Database 0 (7 keys)",
+        "Database 1",
+        "Database 2",
+        "Database 3",
+        "Database 4",
+        "Database 5",
+        "Database 6",
+        "Database 7",
+        "Database 8",
+        "Database 9 (6 keys)",
+        "Database 10",
+        "Database 11",
+        "Database 12",
+        "Database 13",
+        "Database 14",
+        "Database 15"
+      ]
+    }
+  ],
+  "inputs": [
+    {
+      "tag": "input",
+      "id": "search_key",
+      "name": null,
+      "type": "text",
+      "placeholder": "Search...",
+      "value": ""
+    },
+    {
+      "tag": "input",
+      "id": null,
+      "name": null,
+      "type": "checkbox",
+      "placeholder": null,
+      "value": "on"
+    },
+    {
+      "tag": "input",
+      "id": null,
+      "name": null,
+      "type": "checkbox",
+      "placeholder": null,
+      "value": "on"
+    },
+    {
+      "tag": "input",
+      "id": null,
+      "name": null,
+      "type": "checkbox",
+      "placeholder": null,
+      "value": "on"
+    },
+    {
+      "tag": "input",
+      "id": null,
+      "name": null,
+      "type": "checkbox",
+      "placeholder": null,
+      "value": "on"
+    },
+    {
+      "tag": "input",
+      "id": null,
+      "name": null,
+      "type": "checkbox",
+      "placeholder": null,
+      "value": "on"
+    },
+    {
+      "tag": "input",
+      "id": null,
+      "name": null,
+      "type": "checkbox",
+      "placeholder": null,
+      "value": "on"
+    },
+    {
+      "tag": "input",
+      "id": null,
+      "name": null,
+      "type": "checkbox",
+      "placeholder": null,
+      "value": "on"
+    },
+    {
+      "tag": "input",
+      "id": null,
+      "name": null,
+      "type": "checkbox",
+      "placeholder": null,
+      "value": "on"
+    },
+    {
+      "tag": "input",
+      "id": null,
+      "name": "csrf_token",
+      "type": "hidden",
+      "placeholder": null,
+      "value": "b5b67dbd94b815dbcdbd7b0bcc733efe617789ef87fa68dec387a465c765"
+    },
+    {
+      "tag": "input",
+      "id": "import",
+      "name": "import",
+      "type": "file",
+      "placeholder": null,
+      "value": ""
+    }
+  ],
+  "links": [
+    {
+      "text": "Server",
+      "href": "?dashboard=server"
+    },
+    {
+      "text": "Redis",
+      "href": "?dashboard=redis"
+    },
+    {
+      "text": "Memcached",
+      "href": "?dashboard=memcached"
+    },
+    {
+      "text": "phpCacheAdmin",
+      "href": "https://github.com/RobiNN1/phpCacheAdmin"
+    },
+    {
+      "text": "Keys",
+      "href": "?dashboard=redis&tab=keys"
+    },
+    {
+      "text": "Analysis",
+      "href": "?dashboard=redis&tab=analysis"
+    },
+    {
+      "text": "Slow Log",
+      "href": "?dashboard=redis&tab=slowlog"
+    },
+    {
+      "text": "Latency",
+      "href": "?dashboard=redis&tab=latency"
+    },
+    {
+      "text": "Metrics",
+      "href": "?dashboard=redis&tab=metrics"
+    },
+    {
+      "text": "Clients",
+      "href": "?dashboard=redis&tab=clients"
+    },
+    {
+      "text": "Pub/Sub",
+      "href": "?dashboard=redis&tab=pubsub"
+    },
+    {
+      "text": "Profiler",
+      "href": "?dashboard=redis&tab=profiler"
+    },
+    {
+      "text": "Console",
+      "href": "?dashboard=redis&tab=console"
+    },
+    {
+      "text": "More info",
+      "href": "?dashboard=redis&tab=moreinfo"
+    },
+    {
+      "text": "Export",
+      "href": "?dashboard=redis&export_btn=1"
+    },
+    {
+      "text": "Add new",
+      "href": "?dashboard=redis&form=new"
+    },
+    {
+      "text": "tags:prod (3 items)",
+      "href": "?dashboard=redis&view=key&key=tags%3Aprod"
+    },
+    {
+      "text": "queue:tasks (3 items)",
+      "href": "?dashboard=redis&view=key&key=queue%3Atasks"
+    },
+    {
+      "text": "user:1 (3 items)",
+      "href": "?dashboard=redis&view=key&key=user%3A1"
+    },
+    {
+      "text": "greeting",
+      "href": "?dashboard=redis&view=key&key=greeting"
+    },
+    {
+      "text": "app:config",
+      "href": "?dashboard=redis&view=key&key=app%3Aconfig"
+    },
+    {
+      "text": "counter",
+      "href": "?dashboard=redis&view=key&key=counter"
+    },
+    {
+      "text": "leaderboard (3 items)",
+      "href": "?dashboard=redis&view=key&key=leaderboard"
+    }
+  ],
+  "tables": [
+    {
+      "headers": [
+        "",
+        "Key",
+        "Size",
+        "Type",
+        "TTL",
+        "Actions"
+      ],
+      "rowCount": 7
+    }
+  ],
+  "forms": [
+    {
+      "id": "import_form",
+      "action": null,
+      "method": "POST",
+      "fields": [
+        "csrf_token",
+        "import"
+      ]
+    }
+  ],
+  "keyRows": [
+    {
+      "cells": [
+        "",
+        "tags:prod (3 items)",
+        "60.00B",
+        "set",
+        "Doesn't expire",
+        "Delete"
+      ],
+      "hasCheckbox": true,
+      "checkboxValue": "on"
+    },
+    {
+      "cells": [
+        "",
+        "queue:tasks (3 items)",
+        "61.00B",
+        "list",
+        "Doesn't expire",
+        "Delete"
+      ],
+      "hasCheckbox": true,
+      "checkboxValue": "on"
+    },
+    {
+      "cells": [
+        "",
+        "user:1 (3 items)",
+        "76.00B",
+        "hash",
+        "Doesn't expire",
+        "Delete"
+      ],
+      "hasCheckbox": true,
+      "checkboxValue": "on"
+    },
+    {
+      "cells": [
+        "",
+        "greeting",
+        "56.00B",
+        "string",
+        "Doesn't expire",
+        "Delete"
+      ],
+      "hasCheckbox": true,
+      "checkboxValue": "on"
+    },
+    {
+      "cells": [
+        "",
+        "app:config",
+        "85.00B",
+        "string",
+        "Doesn't expire",
+        "Delete"
+      ],
+      "hasCheckbox": true,
+      "checkboxValue": "on"
+    },
+    {
+      "cells": [
+        "",
+        "counter",
+        "26.00B",
+        "string",
+        "Doesn't expire",
+        "Delete"
+      ],
+      "hasCheckbox": true,
+      "checkboxValue": "on"
+    },
+    {
+      "cells": [
+        "",
+        "leaderboard (3 items)",
+        "64.00B",
+        "zset",
+        "Doesn't expire",
+        "Delete"
+      ],
+      "hasCheckbox": true,
+      "checkboxValue": "on"
+    }
+  ],
+  "headings": [
+    "Server",
+    "Memory",
+    "Stats",
+    "Import keys"
+  ],
+  "statusText": "",
+  "alerts": []
+}

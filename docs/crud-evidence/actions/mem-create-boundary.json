@@ -1,0 +1,46 @@
+[
+  {"nav": "http://127.0.0.1:60431/?dashboard=memcached&server=2&form=new"},
+  {"wait": 1200},
+  {"set": {"sel": "#value", "val": "x"}},
+  {"readExpr": "JSON.stringify({keyRequired: document.querySelector('#key').required})"},
+  {"click": "#submit"},
+  {"wait": 1000},
+  {"readExpr": "JSON.stringify({emptyKeyBlocked: location.search.includes('form=new'), msg: document.querySelector('#key').validationMessage})"},
+
+  {"nav": "http://127.0.0.1:60431/?dashboard=memcached&server=2&form=new"},
+  {"wait": 800},
+  {"set": {"sel": "#key", "val": "crud:mem:emptyval"}},
+  {"readExpr": "JSON.stringify({valueRequired: document.querySelector('#value').required, formValid: document.querySelector('form').checkValidity()})"},
+
+  {"nav": "http://127.0.0.1:60431/?dashboard=memcached&server=2&form=new"},
+  {"wait": 800},
+  {"set": {"sel": "#key", "val": "crud:mem:中文键"}},
+  {"set": {"sel": "#value", "val": "中文值"}},
+  {"click": "#submit"},
+  {"wait": 1500},
+  {"readExpr": "JSON.stringify({chineseUrl: location.search})"},
+
+  {"nav": "http://127.0.0.1:60431/?dashboard=memcached&server=2&form=new"},
+  {"wait": 800},
+  {"set": {"sel": "#key", "val": "crud:mem:sp!@#$"}},
+  {"set": {"sel": "#value", "val": "special"}},
+  {"click": "#submit"},
+  {"wait": 1500},
+  {"readExpr": "JSON.stringify({specialUrl: location.search})"},
+
+  {"nav": "http://127.0.0.1:60431/?dashboard=memcached&server=2&form=new"},
+  {"wait": 800},
+  {"set": {"sel": "#key", "val": "crud:mem:expneg"}},
+  {"set": {"sel": "#expire", "val": "-5"}},
+  {"set": {"sel": "#value", "val": "neg"}},
+  {"readExpr": "JSON.stringify({negExpireValid: document.querySelector('#expire').checkValidity(), msg: document.querySelector('#expire').validationMessage})"},
+
+  {"nav": "http://127.0.0.1:60431/?dashboard=memcached&server=2&form=new"},
+  {"wait": 800},
+  {"set": {"sel": "#key", "val": "crud:mem:big100k"}},
+  {"readExpr": "(() => { const v = document.querySelector('#value'); v.value = 'z'.repeat(102400); v.dispatchEvent(new Event('input',{bubbles:true})); return 'len '+v.value.length; })()"},
+  {"click": "#submit"},
+  {"wait": 2500},
+  {"readExpr": "JSON.stringify({bigUrl: location.search, sizeShown: document.body.innerText.match(/[0-9.]+KB/)?.[0]})"},
+  {"shot": "F:\\原E盘\\CacheMainDesktop-历史\\调试记录\\shots\\crud\\memcached-03-create-100k.png"}
+]

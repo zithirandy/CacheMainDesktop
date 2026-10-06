@@ -1,0 +1,31 @@
+cdp-form: target "Redis - CacheMainDesktop" http://127.0.0.1:60431/?dashboard=redis&server=3&form=new
+[0] nav -> http://127.0.0.1:60431/?dashboard=redis&server=3&form=edit&key=crud:ui:string01
+[1] wait 1500ms
+[2] readExpr JSON.stringify({server: document.querySelector('#server_select')?.selectedOptions[0]?.text, keyVal:  -> "{\"server\":\"CRUD 测试 Redis - 127.0.0.1:6379\",\"keyVal\":\"crud:ui:string01\",\"valueVal\":\"hello-ui-create\",\"oldKey\":\"crud:ui:string01\",\"typeShown\":\"string\"}"
+[3] shot -> F:\原E盘\CacheMainDesktop-历史\调试记录\shots\crud\redis-14-edit-form.png
+[4] set #value -> "hello-ui-UPDATED"
+[5] click #submit -> clicked
+[6] wait 2000ms
+[7] readExpr JSON.stringify({afterUrl: location.search, valueShown: document.body.innerText.includes('hello-ui-UP -> "{\"afterUrl\":\"?dashboard=redis&server=3&view=key&key=crud%3Aui%3Astring01\",\"valueShown\":true}"
+[8] nav -> http://127.0.0.1:60431/?dashboard=redis&server=3&form=edit&key=crud:bulk:ttl:long
+[9] wait 1500ms
+[10] readExpr JSON.stringify({ttlEditExpireVal: document.querySelector('#expire')?.value}) -> "{\"ttlEditExpireVal\":\"2597\"}"
+[11] set #expire -> "60"
+[12] click #submit -> clicked
+[13] wait 2000ms
+[14] readExpr JSON.stringify({afterTtlEdit: location.search, ttlText: document.body.innerText.match(/[0-9]+ SECOND -> "{\"afterTtlEdit\":\"?dashboard=redis&server=3&view=key&key=crud%3Abulk%3Attl%3Along\"}"
+[15] nav -> http://127.0.0.1:60431/?dashboard=redis&server=3&form=edit&key=crud:ui:string01
+[16] wait 1500ms
+[17] set #key -> "crud:ui:string01renamed"
+[18] click #submit -> clicked
+[19] wait 2000ms
+[20] readExpr JSON.stringify({afterRename: location.search, alert: [...document.querySelectorAll('.alert')].map(a= -> "{\"afterRename\":\"?dashboard=redis&server=3&view=key&key=crud%3Aui%3Astring01renamed\",\"alert\":[]}"
+cdp-form: target "Redis - CacheMainDesktop" http://127.0.0.1:60431/?dashboard=redis&server=3&view=key&key=crud:ui:hash01
+[0] nav -> http://127.0.0.1:60431/?dashboard=redis&server=3&form=edit&key=crud%3Aui%3Ahash01&hash_key=f1
+[1] wait 1500ms
+[2] readExpr JSON.stringify({key: document.querySelector('#key')?.value, hashKey: document.querySelector('#hash_k -> "{\"key\":\"crud:ui:hash01\",\"hashKey\":\"f1\",\"value\":\"v1\",\"type\":\"hash\",\"hashKeyVisible\":\"block\"}"
+[3] set #value -> "v1-UPDATED"
+[4] click #submit -> clicked
+[5] wait 2000ms
+[6] readExpr JSON.stringify({after: location.search, rows: [...document.querySelectorAll('tbody tr')].map(tr=>tr. -> "{\"after\":\"?dashboard=redis&server=3&view=key&key=crud%3Aui%3Ahash01\",\"rows\":[]}"
+[7] shot -> F:\原E盘\CacheMainDesktop-历史\调试记录\shots\crud\redis-15-hash-field-edit-result.png
