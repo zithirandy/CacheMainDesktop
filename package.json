@@ -4,7 +4,7 @@
   "version": "1.0.0",
   "description": "Desktop wrapper for phpCacheAdmin - a web dashboard for your favorite caching system.",
   "license": "MIT",
-  "main": "main.mjs",
+  "main": "bootstrap.cjs",
   "type": "module",
   "scripts": {
     "fetch-php": "node scripts/fetch-php.mjs",
@@ -14,7 +14,8 @@
     "smoke": "node scripts/smoke.mjs",
     "start": "electron .",
     "predist": "node scripts/fetch-php.mjs && npm run build:css",
-    "dist": "node scripts/build.mjs --win zip"
+    "dist": "node scripts/build.mjs --win zip",
+    "verify": "node scripts/verify-all.mjs"
   },
   "devDependencies": {
     "@tailwindcss/cli": "^4.3.3",

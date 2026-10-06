@@ -10,6 +10,7 @@ directories:
 files:
   - main.mjs
   - preload.cjs
+  - bootstrap.cjs
   - lib/**
   - ui/**
   - package.json

@@ -18,7 +18,7 @@ import {screen} from 'electron';
 import {PhpBackend} from './lib/backend.js';
 import {loadConnections, normalizeConnection, saveConnections, toEnvVars, validateConnection} from './lib/connections.js';
 import {createFileLogger} from './lib/logger.js';
-import {clampToScreen} from './lib/window-state.js';
+import {clampToScreen, correctionForUsableContent} from './lib/window-state.js';
 
 // Development: project root. Packaged: resources/ next to app.asar.
 const BASE = app.isPackaged ? process.resourcesPath : app.getAppPath();
@@ -224,6 +224,39 @@ function workAreas() {
     }
 }
 
+/**
+ * Make sure the window we just opened actually leaves a usable content area
+ * (see correctionForUsableContent). Runs once per load; the helper itself
+ * stands down when the geometry is already fine or when a second pass would not
+ * help, so this cannot loop.
+ */
+async function verifyUsableContent() {
+    if (!mainWindow || mainWindow.isDestroyed()) {
+        return;
+    }
+
+    try {
+        const bounds = mainWindow.getBounds();
+        const workArea = screen.getDisplayMatching(bounds).workArea;
+        const viewport = await mainWindow.webContents.executeJavaScript(
+            '({width: window.innerWidth, height: window.innerHeight})'
+        );
+
+        const fix = correctionForUsableContent(bounds, viewport, workArea);
+
+        if (!fix) {
+            return;
+        }
+
+        log(`content area only ${viewport.width}px wide, resizing window to ${fix.width}px`);
+        mainWindow.setBounds({...bounds, ...fix});
+        saveWindowStateSync(mainWindow.getNormalBounds());
+    } catch (error) {
+        // Geometry is a convenience; never let it take the window down.
+        log(`usable-content check failed: ${error.message}`);
+    }
+}
+
 function createMainWindow(url) {
     const clamped = clampToScreen(loadWindowStateSync(), workAreas());
 
@@ -243,6 +276,15 @@ function createMainWindow(url) {
     });
 
     mainWindow.once('ready-to-show', () => mainWindow.show());
+
+    // A restored geometry can still be wrong for this display: a saved size from
+    // another resolution or scale factor is applied at face value, and the fixed
+    // 240px sidebar then leaves an unusable key list. Clearing window-state.json
+    // used to be the only cure. Check the real viewport once the page is up and
+    // correct the window (persisting the fix) if the content area is too narrow.
+    mainWindow.webContents.once('did-finish-load', () => {
+        verifyUsableContent();
+    });
 
     mainWindow.on('close', () => {
         if (mainWindow && !mainWindow.isDestroyed() && !quiting) {

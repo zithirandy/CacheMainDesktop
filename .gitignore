@@ -27,3 +27,11 @@ docs/shots/
 
 # Session handoff notes (local only)
 handoff/
+
+# Tool state and caches. GitNexus already ignores its own .gitnexus/; these are
+# the equivalents for Claude Code skills, the CodeGraph index (a multi-MB SQLite
+# database) and oh-my-claude artifacts. All are regenerated locally, so they do
+# not belong in a public repo.
+.claude/
+.codegraph/
+.omc/

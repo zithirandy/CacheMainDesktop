@@ -30,7 +30,29 @@ const series = version.split('.').slice(0, 2).join('.');
 const RELEASES_URL = 'https://windows.php.net/downloads/releases/releases.json';
 const RELEASES_BASE = 'https://windows.php.net/downloads/releases/';
 
-const PHP_INI = `; CacheMainDesktop portable PHP configuration
+/**
+ * php.ini for the portable runtime.
+ *
+ * The opcache file cache is written as an ABSOLUTE path, computed from where the
+ * runtime actually lands. That is required, not stylistic:
+ *
+ *   - the bundled PHP intermittently dies at startup with
+ *     "Fatal Error Opcode handlers are unusable due to ASLR. Please setup
+ *     opcache.file_cache and opcache.file_cache_fallback directives";
+ *   - measured over 12 boots per configuration on this machine: no directives
+ *     0/12, file_cache_fallback alone 0/12, ABSOLUTE file_cache + fallback 12/12,
+ *     opcache disabled 12/12. So the file cache is the part that matters;
+ *   - a RELATIVE value ("tmp/opcache") is rejected outright - PHP refuses to
+ *     start with "opcache.file_cache must be a full path of an accessible
+ *     directory".
+ *
+ * This script knows the absolute destination, so it can write one here. The
+ * packaged app cannot (the install location is unknown at build time), so
+ * lib/backend.js passes the same two settings with -d at spawn time instead.
+ *
+ * @param {string} phpDir absolute path the runtime is extracted into
+ */
+const phpIni = phpDir => `; CacheMainDesktop portable PHP configuration
 [PHP]
 extension_dir="ext"
 extension=mbstring
@@ -39,6 +61,10 @@ extension=pdo_sqlite
 opcache.enable=1
 opcache.memory_consumption=128
 opcache.max_accelerated_files=4000
+; Absolute, because a relative path makes PHP refuse to start. See the note in
+; this script, and lib/backend.js for how the packaged app supplies it.
+opcache.file_cache="${path.join(phpDir, 'tmp', 'opcache')}"
+opcache.file_cache_fallback=1
 expose_php=Off
 memory_limit=256M
 max_execution_time=120
@@ -105,6 +131,7 @@ async function main() {
     console.log('fetch-php: extracting...');
     await rm(PHP_DIR, {recursive: true, force: true});
     await mkdir(PHP_DIR, {recursive: true});
+    await mkdir(path.join(PHP_DIR, 'tmp', 'opcache'), {recursive: true});
 
     // Windows ships bsdtar, which transparently extracts zip archives.
     execFileSync(`${process.env.SystemRoot}\\System32\\tar.exe`, ['-xf', zipPath, '-C', PHP_DIR], {stdio: 'inherit'});
@@ -112,7 +139,7 @@ async function main() {
     await rm(zipPath, {force: true});
 
     console.log('fetch-php: writing php.ini...');
-    await writeFile(path.join(PHP_DIR, 'php.ini'), PHP_INI);
+    await writeFile(path.join(PHP_DIR, 'php.ini'), phpIni(PHP_DIR));
 
     const exe = path.join(PHP_DIR, 'php.exe');
     const exeStat = await stat(exe).catch(() => null);
