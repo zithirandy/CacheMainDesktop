@@ -137,6 +137,8 @@ trait RedisTrait {
      * @throws Exception
      */
     private function keysTab(): array {
+        $import_responded = false;
+
         if (isset($_POST['submit_import_key'])) {
             if (Csrf::validateToken(Http::post('csrf_token', ''))) {
                 Helpers::import(
@@ -150,12 +152,40 @@ trait RedisTrait {
                             return false;
                         }
 
-                        return $this->redis->restoreKeys($key, ($ttl === -1 ? 0 : $ttl), (string) hex2bin($value));
+                        // Export writes a TTL in seconds (Redis TTL), with 0
+                        // meaning "no expiration". RESTORE - and therefore
+                        // restoreKeys() - takes it in MILLISECONDS, so passing
+                        // the seconds straight through shortened every imported
+                        // key's lifetime by 1000x (a 2000s backup key came back
+                        // with 2s left). Convert, and treat anything negative as
+                        // "no expiration" the way Redis does.
+                        $milliseconds = $ttl > 0 ? $ttl * 1000 : 0;
+
+                        return $this->redis->restoreKeys($key, $milliseconds, (string) hex2bin($value));
                     }
                 );
+
+                // import() redirects on success; if we are still here the
+                // upload was rejected, so show why instead of reloading blank.
+                $import_responded = true;
             } else {
                 echo Helpers::alert('Invalid CSRF token.', 'error');
+                $import_responded = true;
             }
+        }
+
+        // The redirect that finishes a successful import lands back here; the
+        // result is stashed in the session so the outcome (including "skipped
+        // because it already exists") is visible instead of silent.
+        $import_result = Helpers::takeImportResult();
+
+        if ($import_result !== null) {
+            $message = Helpers::importMessage($import_result);
+            $failed = ($import_result['error'] ?? null) !== null || $import_result['failed'] > 0;
+            echo Helpers::alert((string) $message, $failed ? 'error' : 'success');
+        } elseif ($import_responded) {
+            // No result and no redirect: the upload never reached import().
+            echo Helpers::alert((string) Helpers::importMessage(['imported' => 0, 'skipped' => 0, 'failed' => 0, 'error' => 'No file was uploaded.']), 'error');
         }
 
         $keys = Helpers::sortBeforePaginate($this->getAllKeys(), ['link_title' => true]);

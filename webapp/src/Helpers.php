@@ -140,26 +140,136 @@ class Helpers {
         return self::alert('No keys are selected.');
     }
 
-    public static function import(callable $exists, callable $store, bool $tests = false): void {
+    /**
+     * Import keys from an uploaded JSON backup.
+     *
+     * Returns what happened instead of swallowing it: a malformed file used to
+     * fail completely silently (the JsonException was caught and ignored), so
+     * the user saw the page reload with no explanation and no keys. Callers
+     * surface the result.
+     *
+     * @param callable(string): bool                $exists whether the key is already present
+     * @param callable(string, string, int): bool    $store  write one entry
+     * @param bool                                   $tests  collect the outcome instead of redirecting
+     *
+     * @return array{imported: int, skipped: int, failed: int, error: ?string}
+     */
+    public static function import(callable $exists, callable $store, bool $tests = false): array {
+        $result = ['imported' => 0, 'skipped' => 0, 'failed' => 0, 'error' => null];
+
         if (!isset($_FILES['import']) || $_FILES['import']['error'] !== UPLOAD_ERR_OK || (!$tests && !is_uploaded_file($_FILES['import']['tmp_name']))) {
-            return;
+            // No file chosen, or the upload failed - say so rather than
+            // reloading the page as if nothing had been submitted.
+            $result['error'] = 'No file was uploaded.';
+
+            return self::finishImport($result, $tests);
         }
 
         $file = (string) file_get_contents($_FILES['import']['tmp_name']);
 
         try {
             $json = json_decode($file, true, 512, JSON_THROW_ON_ERROR);
+        } catch (JsonException $e) {
+            $result['error'] = 'That file is not valid JSON: '.$e->getMessage();
 
-            foreach ((array) $json as $data) {
-                if (is_array($data) && isset($data['key'], $data['value'], $data['ttl']) && !$exists($data['key'])) {
-                    $store($data['key'], $data['value'], (int) $data['ttl']);
-                }
-            }
-        } catch (JsonException) {
-            //
+            return self::finishImport($result, $tests);
         }
 
+        // An export is a list of entries. A single JSON object decodes to an
+        // array too, so check the shape explicitly - otherwise it would be
+        // iterated as one malformed entry and reported as "1 could not be
+        // restored", which points the user at the wrong problem.
+        if (!is_array($json) || ($json !== [] && !array_is_list($json))) {
+            $result['error'] = 'That file does not contain a list of keys.';
+
+            return self::finishImport($result, $tests);
+        }
+
+        foreach ($json as $data) {
+            if (!is_array($data) || !isset($data['key'], $data['value'], $data['ttl'])) {
+                $result['failed']++;
+                continue;
+            }
+
+            // Existing keys are deliberately left untouched - importing a backup
+            // must not clobber newer data - but the count is reported so the
+            // skip is visible instead of looking like a failure.
+            if ($exists((string) $data['key'])) {
+                $result['skipped']++;
+                continue;
+            }
+
+            if ($store((string) $data['key'], (string) $data['value'], (int) $data['ttl'])) {
+                $result['imported']++;
+            } else {
+                $result['failed']++;
+            }
+        }
+
+        return self::finishImport($result, $tests);
+    }
+
+    /**
+     * @param array{imported: int, skipped: int, failed: int, error: ?string} $result
+     *
+     * @return array{imported: int, skipped: int, failed: int, error: ?string}
+     */
+    private static function finishImport(array $result, bool $skipRedirect): array {
+        if ($skipRedirect) {
+            return $result;
+        }
+
+        Http::startSession();
+        $_SESSION['pca_import_result'] = $result;
+
         Http::redirect(['view']);
+
+        return $result;
+    }
+
+    /**
+     * Human-readable summary of an import, for rendering as an alert.
+     *
+     * @param array{imported: int, skipped: int, failed: int, error: ?string} $result
+     */
+    public static function importMessage(array $result): ?string {
+        if (($result['error'] ?? null) !== null) {
+            return (string) $result['error'];
+        }
+
+        $parts = [];
+
+        if ($result['imported'] > 0) {
+            $parts[] = $result['imported'].' imported';
+        }
+
+        if ($result['skipped'] > 0) {
+            $parts[] = $result['skipped'].' skipped (already present)';
+        }
+
+        if ($result['failed'] > 0) {
+            $parts[] = $result['failed'].' could not be restored';
+        }
+
+        if ($parts === []) {
+            return 'The file contained no keys to import.';
+        }
+
+        return 'Import finished: '.implode(', ', $parts).'.';
+    }
+
+    /**
+     * Take the pending import result, if any. Reading it clears it, so the
+     * message is shown once and does not survive a refresh.
+     *
+     * @return array{imported: int, skipped: int, failed: int, error: ?string}|null
+     */
+    public static function takeImportResult(): ?array {
+        $result = $_SESSION['pca_import_result'] ?? null;
+
+        unset($_SESSION['pca_import_result']);
+
+        return is_array($result) ? $result : null;
     }
 
     /**

@@ -279,6 +279,46 @@ class PHPMem {
      *
      * @return array<string, string|int>
      */
+    /**
+     * Normalise a raw `exp` value into the seconds a key has left, which is the
+     * only form the UI wants.
+     *
+     * The two sources disagree, verified against memcached 1.6.45:
+     *   - `me <key>` / metadump report a REMAINING ttl already (`exp=600` for a
+     *     key with 10 minutes left), so it must be used as-is;
+     *   - the legacy `stats items` walk reports an ABSOLUTE epoch, which needs
+     *     the current time subtracted.
+     *
+     * Mixing the two made the key detail page print an epoch as a duration and
+     * made the edit form prefill 0 for a key that still had a TTL, so saving any
+     * edit silently turned an expiring key into a permanent one (defect D4).
+     *
+     * @param array<string, mixed> $data
+     * @param bool                  $absoluteExp Is `exp` an epoch that needs converting?
+     *
+     * @return array<string, mixed>
+     */
+    public static function normaliseExpiry(array $data, int $now, bool $absoluteExp = false): array {
+        if (!isset($data['exp'])) {
+            return $data;
+        }
+
+        $exp = (int) $data['exp'];
+
+        // -1 (and 0, which memcached also uses for "no expiry") means permanent.
+        if ($exp <= 0) {
+            $data['exp'] = -1;
+
+            return $data;
+        }
+
+        $data['exp'] = $absoluteExp
+            ? max(0, $exp - $now)   // absolute epoch -> remaining
+            : $exp;                 // already a remaining duration
+
+        return $data;
+    }
+
     public function parseLine(string $line): array {
         $data = [];
 
@@ -316,6 +356,8 @@ class PHPMem {
     public function getKeyMeta(string $key): array {
         $key = preg_replace('/[\s\x00-\x1f]+/', '', $key);
 
+        $now = time();
+
         if (version_compare($this->version(), '1.5.19', '>=')) {
             $raw = $this->runCommand('me '.$key);
 
@@ -326,12 +368,14 @@ class PHPMem {
             $raw = preg_replace('/^ME\s+\S+\s+/', '', $raw); // Remove `ME keyname`
             $data = $this->parseLine($raw);
 
-            // Before 1.6.24 `me` returned the remaining TTL negated (exp=-120 for 120 s left).
+            // Before 1.6.24 `me` returned the remaining TTL negated (exp=-120 for
+            // 120 s left). Undo the sign; it is already a duration.
             if (isset($data['exp']) && $data['exp'] < -1 && version_compare($this->version(), '1.6.24', '<')) {
                 $data['exp'] = -$data['exp'];
             }
 
-            return $data;
+            // `me` reports a remaining TTL, so no epoch conversion.
+            return self::normaliseExpiry($data, $now);
         }
 
         foreach ($this->getKeys() as $line) {
@@ -341,11 +385,8 @@ class PHPMem {
                 continue;
             }
 
-            if (isset($data['exp']) && $data['exp'] !== -1) {
-                $data['exp'] = max(0, (int) $data['exp'] - time());
-            }
-
-            return $data;
+            // The legacy walk reports an absolute epoch.
+            return self::normaliseExpiry($data, $now, true);
         }
 
         return [];

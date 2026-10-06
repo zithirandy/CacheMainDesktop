@@ -14,7 +14,7 @@
             id: 'expire',
             label: 'Expire (in seconds)',
             type: 'number',
-            help: '0 removes expiration (default).',
+            help: expire_help|default('Seconds from now. 0 or -1 means the key never expires.'),
             value: expire,
             attr: exp_attr,
         }) }}

@@ -93,7 +93,13 @@ trait MemcachedKeyView {
      */
     private function form(): string {
         $key = Http::get('key', '', true);
-        $expire = Http::get('ttl', 0);
+
+        // A sentinel default is needed to tell "no ttl in the URL" apart from a
+        // real ttl=0: Http::get() returns its default when the parameter is
+        // missing, and 0 is a meaningful value here ("never expires").
+        $requested_ttl = Http::get('ttl', 'absent');
+        $ttl_from_url = is_numeric($requested_ttl);
+        $expire = $ttl_from_url ? (int) $requested_ttl : 0;
         $expire = $expire === -1 ? 0 : $expire;
 
         $encoder = Http::get('encoder', 'none');
@@ -101,6 +107,16 @@ trait MemcachedKeyView {
 
         if (isset($_GET['key']) && $this->memcached->exists($key)) {
             $value = (string) $this->memcached->get($key);
+
+            // Editing a key that still has a TTL used to prefill 0, so saving a
+            // value-only edit silently made it permanent. The Redis panel keeps
+            // the remaining TTL, so the two panels disagreed. Prefill the real
+            // remaining seconds whenever the URL did not carry one.
+            if (!$ttl_from_url) {
+                $remaining = $this->memcached->getKeyMeta($key)['exp'] ?? -1;
+
+                $expire = $remaining > 0 ? $remaining : 0;
+            }
         }
 
         if (isset($_POST['submit'])) {
@@ -114,12 +130,15 @@ trait MemcachedKeyView {
         $value = Value::converter($value, $encoder, 'view');
 
         return $this->template->render('partials/form', [
-            'exp_attr' => 'min="0" max="2592000"',
-            'key'      => $key,
-            'value'    => $value,
-            'expire'   => $expire,
-            'encoders' => Config::getEncoders(),
-            'encoder'  => $encoder,
+            'exp_attr'    => 'min="0" max="2592000"',
+            // Memcached uses 0 for "never expires"; -1 is not accepted by its
+            // text protocol here, so say so instead of leaving the user to guess.
+            'expire_help' => 'Seconds from now, max 30 days. 0 means the key never expires.',
+            'key'         => $key,
+            'value'       => $value,
+            'expire'      => $expire,
+            'encoders'    => Config::getEncoders(),
+            'encoder'     => $encoder,
         ]);
     }
 }

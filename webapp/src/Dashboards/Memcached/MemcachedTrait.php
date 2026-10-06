@@ -79,15 +79,33 @@ trait MemcachedTrait {
      * @throws MemcachedException
      */
     private function keysTab(): array {
+        $import_responded = false;
+
         if (isset($_POST['submit_import_key'])) {
             if (Csrf::validateToken(Http::post('csrf_token', ''))) {
                 Helpers::import(
                     fn (string $key): bool => $this->memcached->exists($key),
                     fn (string $key, string $value, int $ttl): bool => $this->memcached->set(urldecode($key), base64_decode($value), $ttl)
                 );
+
+                // import() redirects when it accepted the upload; reaching here
+                // means the file was rejected, so explain rather than reload blank.
+                $import_responded = true;
             } else {
                 echo Helpers::alert('Invalid CSRF token.', 'error');
+                $import_responded = true;
             }
+        }
+
+        // After a successful import the redirect returns here; report the
+        // outcome so skipped/failed entries are visible instead of silent.
+        $import_result = Helpers::takeImportResult();
+
+        if ($import_result !== null) {
+            $failed = ($import_result['error'] ?? null) !== null || $import_result['failed'] > 0;
+            echo Helpers::alert((string) Helpers::importMessage($import_result), $failed ? 'error' : 'success');
+        } elseif ($import_responded) {
+            echo Helpers::alert('No file was uploaded.', 'error');
         }
 
         $raw_key_lines = $this->getAllKeys();
